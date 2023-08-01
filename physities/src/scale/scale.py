@@ -7,15 +7,20 @@ from physities.src.dimension.base_dimensions import BaseDimension
 @dataclass(frozen=True, slots=True)
 class Scale:
     dimension: Dimension
-    from_base_conversions: tuple[
-        float, float, float, float, float, float, float
-    ]
+    from_base_conversions: tuple[float, float, float, float, float, float, float]
     rescale_value: float
 
     @staticmethod
     def __get_annulled_dimension(
         dimension_1: Dimension, dimension_2: Dimension, result_dimension: Dimension
-    ) -> list[BaseDimension, BaseDimension, BaseDimension, BaseDimension, BaseDimension, BaseDimension]:
+    ) -> list[
+        BaseDimension,
+        BaseDimension,
+        BaseDimension,
+        BaseDimension,
+        BaseDimension,
+        BaseDimension,
+    ]:
         set_1 = set(dimension_1.get_dimensions())
         set_2 = set(dimension_2.get_dimensions())
         set_3 = set(result_dimension.get_dimensions())
@@ -24,9 +29,7 @@ class Scale:
     @staticmethod
     def __fit_scale_and_dimension(
         dimension_instance: Dimension,
-        from_base_conversions: tuple[
-            float, float, float, float, float, float, float
-        ],
+        from_base_conversions: tuple[float, float, float, float, float, float, float],
         value: float,
         rescale_value: float,
     ):
@@ -40,6 +43,7 @@ class Scale:
         return rescale_value * value, from_base_conversions
 
     def __mul__(self, other):
+        # TODO: Dividiria em duas funcoes isso aki
         if isinstance(other, (int, float)):
             new_value, new_from_base_conversions = self.__fit_scale_and_dimension(
                 dimension_instance=self.dimension,
@@ -90,6 +94,7 @@ class Scale:
         return to_return
 
     def __truediv__(self, other):
+        # TODO: Dividiria em duas funcoes isso aki
         if isinstance(other, (int, float)):
             new_value, new_from_base_conversions = self.__fit_scale_and_dimension(
                 dimension_instance=self.dimension,
@@ -137,8 +142,7 @@ class Scale:
             new_dimension = self.dimension * -1
             new_rescale_value = 1 / self.rescale_value
             new_from_base_conversions_list = [
-                1 / self.from_base_conversions[i]
-                for i in BaseDimension
+                1 / self.from_base_conversions[i] for i in BaseDimension
             ]
             new_value, new_from_base_conversions = self.__fit_scale_and_dimension(
                 dimension_instance=new_dimension,
@@ -158,12 +162,15 @@ class Scale:
     def __pow__(self, power, modulo=None):
         if isinstance(power, (int, float)):
             new_dimension = self.dimension * power
-            new_from_base_conversions = tuple(i**power for i in self.from_base_conversions)
+            new_from_base_conversions = tuple(
+                i**power for i in self.from_base_conversions
+            )
             new_rescale_value = self.rescale_value**power
             return Scale(
-                dimension=new_dimension, from_base_conversions=new_from_base_conversions, rescale_value=new_rescale_value
+                dimension=new_dimension,
+                from_base_conversions=new_from_base_conversions,
+                rescale_value=new_rescale_value,
             )
         return TypeError(
             f"{Scale} can only be powered by {int} or {float}. This operation is not implemented for {type(other)}."
         )
-

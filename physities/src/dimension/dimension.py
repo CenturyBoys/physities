@@ -7,7 +7,13 @@ from physities.src.dimension.base_dimensions import BaseDimension
 @dataclass(frozen=True, slots=True)
 class Dimension:
     dimensions_tuple: tuple[
-        float, float, float, float, float, float, float,
+        float,
+        float,
+        float,
+        float,
+        float,
+        float,
+        float,
     ]
 
     def __post_init__(self):
@@ -68,11 +74,15 @@ class Dimension:
 
     @classmethod
     def new_electric_current(cls, power: float = None) -> Self:
-        return cls.__new_base_unit(base_unit=BaseDimension.ELECTRIC_CURRENT, power=power)
+        return cls.__new_base_unit(
+            base_unit=BaseDimension.ELECTRIC_CURRENT, power=power
+        )
 
     @classmethod
     def new_luminous_intensity(cls, power: float = None) -> Self:
-        return cls.__new_base_unit(base_unit=BaseDimension.LUMINOUS_INTENSITY, power=power)
+        return cls.__new_base_unit(
+            base_unit=BaseDimension.LUMINOUS_INTENSITY, power=power
+        )
 
     @classmethod
     def __new_base_unit(cls, base_unit: BaseDimension, power: float = None):
@@ -80,7 +90,7 @@ class Dimension:
             power = 1
         elif not isinstance(power, (int, float)):
             raise TypeError("The exponentiation must be a int or a float.")
-        dimensions_tuple = [0.0 for i in BaseDimension]
+        dimensions_tuple = [float(0) for _ in range(BaseDimension)]
         dimensions_tuple[base_unit] = power
         return cls.new_instance(dimensions_tuple=tuple(dimensions_tuple))
 
@@ -99,13 +109,12 @@ class Dimension:
         ]
 
     def __add__(self, other):
-        if isinstance(other, Dimension):
-            dimensions_tuple = tuple(
-                sum(i) for i in zip(self.dimensions_tuple, other.dimensions_tuple)
-            )
-            return Dimension(dimensions_tuple=dimensions_tuple)
-        else:
+        if not isinstance(other, Dimension):
             raise TypeError("Dimension only allow addition between same instance.")
+        dimensions_tuple = tuple(
+            sum(i) for i in zip(self.dimensions_tuple, other.dimensions_tuple)
+        )
+        return Dimension(dimensions_tuple=dimensions_tuple)
 
     def __radd__(self, other):
         try:
@@ -115,15 +124,14 @@ class Dimension:
         return to_return
 
     def __sub__(self, other):
-        if isinstance(other, Dimension):
-            negative_other_dimensions_tuple = tuple(-i for i in other.dimensions_tuple)
-            dimensions_tuple = tuple(
-                sum(i)
-                for i in zip(self.dimensions_tuple, negative_other_dimensions_tuple)
-            )
-            return Dimension(dimensions_tuple=dimensions_tuple)
-        else:
+        if not isinstance(other, Dimension):
             raise TypeError("Dimension only allow subtraction between same instance.")
+        negative_other_dimensions_tuple = tuple(-i for i in other.dimensions_tuple)
+        dimensions_tuple = tuple(
+            sum(i)
+            for i in zip(self.dimensions_tuple, negative_other_dimensions_tuple)
+        )
+        return Dimension(dimensions_tuple=dimensions_tuple)
 
     def __rsub__(self, other):
         try:
@@ -133,32 +141,28 @@ class Dimension:
         return to_return
 
     def __mul__(self, other):
-        if isinstance(other, (int, float)):
-            dimensions_tuple = tuple(other * i for i in self.dimensions_tuple)
-            return Dimension(dimensions_tuple=dimensions_tuple)
-        else:
+        if not isinstance(other, (int, float)):
             raise TypeError("Dimension only allow multiplication with int or floats.")
+        dimensions_tuple = tuple(other * i for i in self.dimensions_tuple)
+        return Dimension(dimensions_tuple=dimensions_tuple)
 
     def __rmul__(self, other):
         if isinstance(other, (int, float)):
-            dimensions_tuple = tuple(other * i for i in self.dimensions_tuple)
-            return Dimension(dimensions_tuple=dimensions_tuple)
-        else:
             raise TypeError("Dimension only allow multiplication with int or floats.")
+        dimensions_tuple = tuple(other * i for i in self.dimensions_tuple)
+        return Dimension(dimensions_tuple=dimensions_tuple)
 
     def __truediv__(self, other):
         if isinstance(other, (int, float)):
-            dimensions_tuple = tuple(i / other for i in self.dimensions_tuple)
-            return Dimension(dimensions_tuple=dimensions_tuple)
-        else:
             raise TypeError("Dimension only allow division by int or floats.")
+        dimensions_tuple = tuple(i / other for i in self.dimensions_tuple)
+        return Dimension(dimensions_tuple=dimensions_tuple)
 
     def __rtruediv__(self, other):
         if isinstance(other, (int, float)):
-            dimensions_tuple = tuple(other / i for i in self.dimensions_tuple)
-            return Dimension(dimensions_tuple=dimensions_tuple)
-        else:
             raise TypeError("Dimension only allow division by int or floats.")
+        dimensions_tuple = tuple(other / i for i in self.dimensions_tuple)
+        return Dimension(dimensions_tuple=dimensions_tuple)
 
     def __eq__(self, other):
         if isinstance(other, Dimension) or issubclass(type(other), Dimension):

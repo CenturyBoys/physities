@@ -6,13 +6,16 @@ class MetaUnit(type):
     scale: Scale
 
     def __mul__(self, other):
+        new_scale = None
         if isinstance(other, (int, float)):
             new_scale = self.scale * other
-            return type(self)(f"Unit", (Unit,), {"scale": new_scale, "value": None})
         if isinstance(other, MetaUnit):
             new_scale = self.scale * other.scale
-            return type(f"Unit", (Unit,), {"scale": new_scale, "value": None})
-        raise TypeError(f"{self} only allows multiplication by {self}, {int}, and {float}")
+        if new_scale is None:
+            raise TypeError(
+                f"{self} only allows multiplication by {self}, {int}, and {float}"
+            )
+        return type(self)(f"Unit", (Unit,), {"scale": new_scale, "value": None})
 
     def __rmul__(self, other):
         try:
@@ -22,25 +25,28 @@ class MetaUnit(type):
         return to_return
 
     def __truediv__(self, other):
+        new_scale = None
         if isinstance(other, (int, float)):
             new_scale = self.scale / other
-            return type(f"Unit", (Unit,), {"scale": new_scale, "value": None})
         if isinstance(other, MetaUnit):
             new_scale = self.scale / other.scale
-            return type(f"Unit", (Unit,), {"scale": new_scale, "value": None})
-        raise TypeError(f"{self} only allows division by {self}, {int}, and {float}")
+        if new_scale is None:
+            raise TypeError(
+                f"{self} only allows division by {self}, {int}, and {float}"
+            )
+        return type(self)(f"Unit", (Unit,), {"scale": new_scale, "value": None})
 
     def __rtruediv__(self, other):
-        if isinstance(other, (int, float)):
-            new_scale = other / self.scale
-            return type(f"Unit", (Unit,), {"scale": new_scale, "value": None})
-        raise TypeError(f"{self} can divide only {self}, {int} and {float}")
+        if not isinstance(other, (int, float)):
+            raise TypeError(f"{self} can divide only {self}, {int} and {float}")
+        new_scale = other / self.scale
+        return type(f"Unit", (Unit,), {"scale": new_scale, "value": None})
 
     def __pow__(self, power, modulo=None):
-        if isinstance(power, (int, float)):
-            new_scale = self.scale ** power
-            return type(f"Unit", (Unit,), {"scale": new_scale, "value": None})
-        raise TypeError(f"{self} can only be powered by {int} and {float}")
+        if not isinstance(power, (int, float)):
+            raise TypeError(f"{self} can only be powered by {int} and {float}")
+        new_scale = self.scale**power
+        return type(f"Unit", (Unit,), {"scale": new_scale, "value": None})
 
 
 class Unit(metaclass=MetaUnit):
@@ -50,57 +56,52 @@ class Unit(metaclass=MetaUnit):
     def __init__(self, value):
         self.value = value
 
+    def set_scale(self, scale: Scale):
+        self.scale = scale
+        return self
+
     def __mul__(self, other):
+        value, scale = None, self.scale
         if isinstance(other, (int, float)):
-            new_value = self.value * other
-            new_instance = type(self)(new_value)
-            new_instance.scale = self.scale
-            return new_instance
+            value = self.value * other
         if isinstance(other, type(self)):
-            new_scale = self.scale * other.scale
-            new_value = self.value * other.value
-            new_instance = type(self)(new_value)
-            new_instance.scale = new_scale
-            return new_instance
-        raise TypeError
+            scale = scale * other.scale
+            value = self.value * other.value
+        if not value:
+            raise TypeError
+        new_instance = type(self)(value).set_scale(scale)
+        return new_instance
 
     def __rmul__(self, other):
-        try:
-            to_return = Unit.__mul__(self, other)
-        except TypeError as e:
-            raise e
-        return to_return
+        return Unit.__mul__(self, other)
 
     def __truediv__(self, other):
+        value, scale = None, self.scale
         if isinstance(other, (int, float)):
-            new_value = self.value / other
-            new_instance = type(self)(new_value)
-            new_instance.scale = self.scale
-            return new_instance
+            value = self.value / other
         if isinstance(other, type(self)):
-            new_scale = self.scale / other.scale
-            new_value = self.value / other.value
-            new_instance = type(self)(new_value)
-            new_instance.scale = new_scale
-            return new_instance
-        raise TypeError
+            scale = self.scale / other.scale
+            value = self.value / other.value
+        if not value:
+            raise TypeError
+        new_instance = type(self)(value).set_scale(scale)
+        return new_instance
 
     def __rtruediv__(self, other):
-        if isinstance(other, (int, float)):
-            new_value = other / self.value
-            new_scale = 1 / self.scale
-            new_instance = type(self)(new_value)
-            new_instance.scale = new_scale
-            return new_instance
-        raise TypeError
+        if not isinstance(other, (int, float)):
+            raise TypeError
+        new_value = other / self.value
+        new_scale = 1 / self.scale
+        new_instance = type(self)(new_value).set_scale(new_scale)
+        return new_instance
 
     def __pow__(self, power, modulo=None):
-        if isinstance(power, (int, float)):
-            new_value = self.value **2
-            new_scale = self.scale**2
-            new_instance = type(self)(new_value)
-            new_instance.scale = new_scale
-            return new_instance
+        if not isinstance(power, (int, float)):
+            raise TypeError
+        new_value = self.value**2
+        new_scale = self.scale**2
+        new_instance = type(self)(new_value).set_scale(new_scale)
+        return new_instance
 
     def to_base(self, *args):
         print(args)

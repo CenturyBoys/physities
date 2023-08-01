@@ -13,8 +13,10 @@ def print_hi(name):
 
 # Press the green button in the gutter to run the script.
 if __name__ == "__main__":
-    a = Centimeter*Centimeter
-    b = Centimeter(10)
+    cm = Centimeter
+    a = cm * cm
+    b = cm(10)
+    b * 1
     print()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
