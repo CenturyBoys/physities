@@ -1,0 +1,17 @@
+# Physities
+
+> Python library for representing and working with physical quantities and units. Provides dimensional analysis, unit conversion, and mathematical operations.
+
+Physities uses a three-layer architecture: BaseDimension (7 SI dimensions) -> Dimension (composite dimensions) -> Scale (conversion factors) -> Unit (values with scales). The MetaUnit metaclass enables class-level operator overloading for elegant syntax like `Meter / Second`.
+
+## Documentation
+
+- [README](https://github.com/CenturyBoys/physities/blob/main/README.md): Installation and usage guide
+- [CLAUDE.md](https://github.com/CenturyBoys/physities/blob/main/CLAUDE.md): Development guide for AI assistants
+
+## Source
+
+- [Unit](https://github.com/CenturyBoys/physities/blob/main/physities/src/unit/unit.py): Core Unit and MetaUnit classes
+- [Scale](https://github.com/CenturyBoys/physities/blob/main/physities/src/scale/scale.py): Scale class for unit conversion
+- [Dimension](https://github.com/CenturyBoys/physities/blob/main/physities/src/dimension/dimension.py): Dimension class
+- [Pre-defined Units](https://github.com/CenturyBoys/physities/blob/main/physities/src/unit/__init__.py): All available units
