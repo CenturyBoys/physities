@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "physities"
-version = "0.1.2"
+version = "0.1.3"
 description = ""
 authors = ["M4tus4l3m <lucas.sievers@gmail.com>"]
 readme = "README.md"
