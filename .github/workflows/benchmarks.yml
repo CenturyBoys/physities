@@ -64,6 +64,7 @@ jobs:
       - name: Comment benchmark results on PR
         uses: benchmark-action/github-action-benchmark@v1
         if: github.event_name == 'pull_request'
+        continue-on-error: true
         with:
           name: Physities Benchmarks
           tool: 'pytest'
