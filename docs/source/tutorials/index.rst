@@ -8,3 +8,4 @@ These tutorials provide hands-on examples for using Physities in common scenario
 
    basic_usage
    unit_conversion
+   numpy_integration
