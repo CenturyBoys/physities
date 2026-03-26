@@ -392,7 +392,7 @@ class Dimension:
     def __add__(self, other):
         if isinstance(other, Dimension):
             # Use Rust backend when enabled (disabled by default for performance)
-            if _USE_RUST_FOR_OPS:
+            if _HAS_RUST and _USE_RUST_FOR_OPS:
                 rust_result = _dimension_to_rust(self).add_dimensions(_dimension_to_rust(other))
                 return _rust_to_dimension(rust_result)
 
@@ -414,7 +414,7 @@ class Dimension:
     def __sub__(self, other):
         if isinstance(other, Dimension):
             # Use Rust backend when enabled (disabled by default for performance)
-            if _USE_RUST_FOR_OPS:
+            if _HAS_RUST and _USE_RUST_FOR_OPS:
                 rust_result = _dimension_to_rust(self).subtract_dimensions(_dimension_to_rust(other))
                 return _rust_to_dimension(rust_result)
 
@@ -438,7 +438,7 @@ class Dimension:
     def __mul__(self, other):
         if isinstance(other, (int, float)):
             # Use Rust backend when enabled (disabled by default for performance)
-            if _USE_RUST_FOR_OPS:
+            if _HAS_RUST and _USE_RUST_FOR_OPS:
                 rust_result = _dimension_to_rust(self).multiply_dimensions(float(other))
                 return _rust_to_dimension(rust_result)
 
@@ -451,7 +451,7 @@ class Dimension:
     def __rmul__(self, other):
         if isinstance(other, (int, float)):
             # Use Rust backend when enabled (disabled by default for performance)
-            if _USE_RUST_FOR_OPS:
+            if _HAS_RUST and _USE_RUST_FOR_OPS:
                 rust_result = _dimension_to_rust(self).multiply_dimensions(float(other))
                 return _rust_to_dimension(rust_result)
 
@@ -464,7 +464,7 @@ class Dimension:
     def __truediv__(self, other):
         if isinstance(other, (int, float)):
             # Use Rust backend when enabled (disabled by default for performance)
-            if _USE_RUST_FOR_OPS:
+            if _HAS_RUST and _USE_RUST_FOR_OPS:
                 rust_result = _dimension_to_rust(self).divide_dimensions(float(other))
                 return _rust_to_dimension(rust_result)
 

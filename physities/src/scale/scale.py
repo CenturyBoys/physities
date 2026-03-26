@@ -313,7 +313,7 @@ class Scale(Kobject):
 
     def __mul__(self, other):
         # Use Rust backend when enabled (disabled by default for single ops)
-        if _USE_RUST_FOR_OPS:
+        if _HAS_RUST and _USE_RUST_FOR_OPS:
             if isinstance(other, (int, float)):
                 rust_result = _scale_to_rust(self).multiply_scalar(float(other))
                 return _rust_to_scale(rust_result)
@@ -376,7 +376,7 @@ class Scale(Kobject):
 
     def __truediv__(self, other):
         # Use Rust backend when enabled (disabled by default for single ops)
-        if _USE_RUST_FOR_OPS:
+        if _HAS_RUST and _USE_RUST_FOR_OPS:
             if isinstance(other, (int, float)):
                 rust_result = _scale_to_rust(self).divide_scalar(float(other))
                 return _rust_to_scale(rust_result)
