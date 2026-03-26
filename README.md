@@ -1,5 +1,8 @@
 # Physities
 
+![banner.png](docs/banner.png)
+
+
 [![CI](https://github.com/M4tus4l3m/physities/actions/workflows/publish.yml/badge.svg)](https://github.com/M4tus4l3m/physities/actions/workflows/publish.yml)
 [![codecov](https://codecov.io/gh/M4tus4l3m/physities/branch/main/graph/badge.svg)](https://codecov.io/gh/M4tus4l3m/physities)
 [![PyPI](https://badge.fury.io/py/physities.svg)](https://pypi.org/project/physities/)
