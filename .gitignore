@@ -128,3 +128,13 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Rust
+target/
+Cargo.lock
+*.pdb
+
+# Maturin
+*.so
+*.pyd
+*.dll
