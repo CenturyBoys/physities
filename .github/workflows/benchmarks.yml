@@ -71,3 +71,5 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           comment-always: true
           alert-threshold: '150%'
+          skip-fetch-gh-pages: true
+          save-data-file: false
