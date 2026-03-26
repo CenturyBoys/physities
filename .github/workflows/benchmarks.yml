@@ -30,12 +30,16 @@ jobs:
         run: |
           pip install maturin pytest pytest-benchmark numpy kobject
 
-      - name: Build and install package
-        run: maturin develop --release
+      - name: Build package
+        run: maturin build --release
+
+      - name: Install package
+        run: pip install target/wheels/*.whl --force-reinstall
 
       - name: Run benchmarks
+        working-directory: /tmp
         run: |
-          pytest benchmarks/ \
+          pytest $GITHUB_WORKSPACE/benchmarks/ \
             --benchmark-only \
             --benchmark-json=benchmark-results.json \
             --benchmark-columns=min,max,mean,stddev,median,ops \

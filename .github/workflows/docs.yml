@@ -36,8 +36,11 @@ jobs:
           pip install maturin kobject
           pip install sphinx furo myst-parser sphinx-autodoc-typehints sphinx-copybutton
 
-      - name: Build and install package
-        run: maturin develop --release
+      - name: Build package
+        run: maturin build --release
+
+      - name: Install package
+        run: pip install target/wheels/*.whl --force-reinstall
 
       - name: Build documentation
         run: |
