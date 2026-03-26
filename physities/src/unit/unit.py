@@ -33,12 +33,19 @@ class MetaUnit(type):
     scale: Scale
 
     def __hash__(self):
-        return hash(self.scale)
+        if hasattr(self, 'scale') and self.scale is not None:
+            return hash(self.scale)
+        return hash(id(self))
 
     def __eq__(self, other):
-        if isinstance(other, MetaUnit) and self.scale.dimension == other.scale.dimension and self.scale.conversion_factor == other.scale.conversion_factor:
-            return True
-        return False
+        if not isinstance(other, MetaUnit):
+            return False
+        if not hasattr(self, 'scale') or not hasattr(other, 'scale'):
+            return False
+        if self.scale is None or other.scale is None:
+            return False
+        return (self.scale.dimension == other.scale.dimension and
+                self.scale.conversion_factor == other.scale.conversion_factor)
 
     def __mul__(self, other):
         if isinstance(other, numbers.Real):
