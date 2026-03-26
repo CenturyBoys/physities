@@ -1,3 +1,4 @@
+import numbers
 from typing import Self
 
 from physities.src.exceptions import (
@@ -40,7 +41,7 @@ class MetaUnit(type):
         return False
 
     def __mul__(self, other):
-        if isinstance(other, (int, float)):
+        if isinstance(other, numbers.Real):
             new_scale = self.scale * other
             return type(self)(f"Unit", (Unit,), {"scale": new_scale, "value": None})
         if isinstance(other, MetaUnit):
@@ -60,7 +61,7 @@ class MetaUnit(type):
         return to_return
 
     def __truediv__(self, other):
-        if isinstance(other, (int, float)):
+        if isinstance(other, numbers.Real):
             new_scale = self.scale / other
             return type(f"Unit", (Unit,), {"scale": new_scale, "value": None})
         if isinstance(other, MetaUnit):
@@ -73,7 +74,7 @@ class MetaUnit(type):
         )
 
     def __rtruediv__(self, other):
-        if isinstance(other, (int, float)):
+        if isinstance(other, numbers.Real):
             new_scale = other / self.scale
             return type(f"Unit", (Unit,), {"scale": new_scale, "value": None})
         raise InvalidOperationError(
@@ -83,7 +84,7 @@ class MetaUnit(type):
         )
 
     def __pow__(self, power, modulo=None):
-        if isinstance(power, (int, float)):
+        if isinstance(power, numbers.Real):
             new_scale = self.scale**power
             return type(f"Unit", (Unit,), {"scale": new_scale, "value": None})
         raise InvalidPowerError(self, power)
@@ -192,7 +193,7 @@ class Unit(metaclass=MetaUnit):
         raise InvalidOperationError("subtraction", type(other), (Unit,))
 
     def __mul__(self, other):
-        if isinstance(other, (int, float)):
+        if isinstance(other, numbers.Real):
             new_value = self.value * other
             new_instance = type(self)(new_value)
             new_instance.scale = self.scale
@@ -220,7 +221,7 @@ class Unit(metaclass=MetaUnit):
         return to_return
 
     def __truediv__(self, other):
-        if isinstance(other, (int, float)):
+        if isinstance(other, numbers.Real):
             new_value = self.value / other
             new_instance = type(self)(new_value)
             new_instance.scale = self.scale
@@ -241,7 +242,7 @@ class Unit(metaclass=MetaUnit):
         )
 
     def __rtruediv__(self, other):
-        if isinstance(other, (int, float)):
+        if isinstance(other, numbers.Real):
             new_value = other / self.value
             new_scale = 1 / self.scale
             new_instance = type(self)(new_value)
@@ -254,7 +255,7 @@ class Unit(metaclass=MetaUnit):
         )
 
     def __pow__(self, power, modulo=None):
-        if isinstance(power, (int, float)):
+        if isinstance(power, numbers.Real):
             new_value = self.value**power
             new_instance = type(self)(new_value)
             new_scale = self.scale**power
