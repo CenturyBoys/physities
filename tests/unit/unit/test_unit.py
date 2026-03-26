@@ -1,5 +1,11 @@
 from physities.src.unit import Meter, Second, Minute, Kilometer, Candela
 from physities.src.unit.unit import MetaUnit
+from physities.src.exceptions import (
+    DimensionMismatchError,
+    InvalidConversionError,
+    InvalidOperationError,
+    InvalidPowerError,
+)
 from tests.fixtures import *
 
 
@@ -64,12 +70,10 @@ class TestMetaUnit:
             pass
         invalid_values = [[], {}, A, (1, 2)]
         for value in invalid_values:
-            with pytest.raises(TypeError) as error_1:
+            with pytest.raises(InvalidOperationError):
                 Meter * value
-            with pytest.raises(TypeError) as error_2:
+            with pytest.raises(InvalidOperationError):
                 meter_per_second_unit * value
-            assert str(error_1.value) == f"{Meter} only allows multiplication by {Meter}, {int}, and {float}"
-            assert str(error_2.value) == f"{meter_per_second_unit} only allows multiplication by {meter_per_second_unit}, {int}, and {float}"
 
     @staticmethod
     def test_division(
@@ -102,18 +106,14 @@ class TestMetaUnit:
             pass
         invalid_values = [[], {}, A, (1, 2)]
         for value in invalid_values:
-            with pytest.raises(TypeError) as error_1:
+            with pytest.raises(InvalidOperationError):
                 Meter / value
-            with pytest.raises(TypeError) as error_2:
+            with pytest.raises(InvalidOperationError):
                 value / Meter
-            with pytest.raises(TypeError) as error_3:
+            with pytest.raises(InvalidOperationError):
                 meter_per_second_unit / value
-            with pytest.raises(TypeError) as error_4:
+            with pytest.raises(InvalidOperationError):
                 value / meter_per_second_unit
-            assert str(error_1.value) == f"{Meter} only allows division by {Meter}, {int}, and {float}"
-            assert str(error_2.value) == f"{Meter} can divide only {Meter}, {int} and {float}"
-            assert str(error_3.value) == f"{meter_per_second_unit} only allows division by {meter_per_second_unit}, {int}, and {float}"
-            assert str(error_4.value) == f"{meter_per_second_unit} can divide only {meter_per_second_unit}, {int} and {float}"
 
     @staticmethod
     def test_power(dimensionless_scale, meter_per_second_unit, inverse_meter_per_second_unit, kilometer_square_unit, kilometer_per_second_unit, kilometer_per_second_square_unit):
@@ -136,12 +136,10 @@ class TestMetaUnit:
 
         invalid_values = [[], {}, A, (1, 2)]
         for value in invalid_values:
-            with pytest.raises(TypeError) as error_1:
+            with pytest.raises(InvalidPowerError):
                 Meter ** value
-            with pytest.raises(TypeError) as error_2:
+            with pytest.raises(InvalidPowerError):
                 meter_per_second_unit ** value
-            assert str(error_1.value) == f"{Meter} can only be powered by {int} and {float}"
-            assert str(error_2.value) == f"{meter_per_second_unit} can only be powered by {int} and {float}"
 
     @staticmethod
     def test_addition_invalid(meter_per_second_unit):
@@ -149,12 +147,10 @@ class TestMetaUnit:
             pass
         invalid_values = [[], {}, A, (1, 2), Meter, meter_per_second_unit]
         for value in invalid_values:
-            with pytest.raises(TypeError) as error_1:
+            with pytest.raises(InvalidOperationError):
                 Meter + value
-            with pytest.raises(TypeError) as error_2:
+            with pytest.raises(InvalidOperationError):
                 meter_per_second_unit + value
-            assert str(error_1.value) == f"Units with translated scale are not allowed yet."
-            assert str(error_2.value) == f"Units with translated scale are not allowed yet."
 
     @staticmethod
     def test_subtraction_invalid(meter_per_second_unit):
@@ -163,12 +159,10 @@ class TestMetaUnit:
 
         invalid_values = [[], {}, A, (1, 2), Meter, meter_per_second_unit]
         for value in invalid_values:
-            with pytest.raises(TypeError) as error_1:
+            with pytest.raises(InvalidOperationError):
                 Meter - value
-            with pytest.raises(TypeError) as error_2:
+            with pytest.raises(InvalidOperationError):
                 meter_per_second_unit - value
-            assert str(error_1.value) == f"Units with translated scale are not allowed yet."
-            assert str(error_2.value) == f"Units with translated scale are not allowed yet."
 
 
 @pytest.mark.unit
@@ -232,12 +226,10 @@ class TestUnit:
         meter_per_second = meter_per_second_unit(10)
         invalid_values = [[], {}, A, (1, 2), Meter, meter_per_second_unit]
         for value in invalid_values:
-            with pytest.raises(TypeError) as error_1:
+            with pytest.raises(InvalidOperationError):
                 meter * value
-            with pytest.raises(TypeError) as error_2:
+            with pytest.raises(InvalidOperationError):
                 meter_per_second * value
-            assert str(error_1.value) == f"{type(meter)} can be multiplied only by {type(meter)}, {float} and {int}"
-            assert str(error_2.value) == f"{type(meter_per_second)} can be multiplied only by {type(meter_per_second)}, {float} and {int}"
 
     @staticmethod
     def test_division(kilogram_unit, newton_scale, dimensionless_scale, meter_per_second_unit, second_inverse_scale):
@@ -268,22 +260,14 @@ class TestUnit:
         meter_per_second = meter_per_second_unit(10)
         invalid_values = [[], {}, A, (1, 2), Meter, meter_per_second_unit]
         for value in invalid_values:
-            with pytest.raises(TypeError) as error_1:
+            with pytest.raises(InvalidOperationError):
                 meter / value
-            with pytest.raises(TypeError) as error_2:
+            with pytest.raises(InvalidOperationError):
                 meter_per_second / value
-            with pytest.raises(TypeError) as error_3:
+            with pytest.raises(InvalidOperationError):
                 value / meter
-            with pytest.raises(TypeError) as error_4:
+            with pytest.raises(InvalidOperationError):
                 value / meter_per_second
-            assert str(error_1.value) == f"{type(meter)} only allows division by {type(meter)}, {int} and {float}"
-            assert str(error_2.value) == f"{type(meter_per_second)} only allows division by {type(meter_per_second)}, {int} and {float}"
-            if value in (Meter, meter_per_second_unit):
-                assert str(error_1.value) == f"{type(meter)} only allows division by {type(meter)}, {int} and {float}"
-                assert str(error_2.value) == f"{type(meter_per_second)} only allows division by {type(meter_per_second)}, {int} and {float}"
-            else:
-                assert str(error_3.value) == f"{type(meter)} can divide only {type(meter)}, {int} and {float}"
-                assert str(error_4.value) == f"{type(meter_per_second)} can divide only {type(meter_per_second)}, {int} and {float}"
 
     @staticmethod
     def test_power(kilometer_per_second_unit, kilometer_square_unit, kilometer_per_second_square_unit, dimensionless_scale):
@@ -311,12 +295,10 @@ class TestUnit:
         meter_per_second = meter_per_second_unit(10)
         invalid_values = [[], {}, A, (1, 2), Meter, meter_per_second_unit]
         for value in invalid_values:
-            with pytest.raises(TypeError) as error_1:
+            with pytest.raises(InvalidPowerError):
                 meter ** value
-            with pytest.raises(TypeError) as error_2:
+            with pytest.raises(InvalidPowerError):
                 meter_per_second ** value
-            assert str(error_1.value) == f"{type(meter)} can only be powered by {int} and {float}"
-            assert str(error_2.value) == f"{type(meter_per_second)} can only be powered by {int} and {float}"
 
     @staticmethod
     def test_addition(meter_per_second_unit):
@@ -336,15 +318,12 @@ class TestUnit:
         meter_per_second = meter_per_second_unit(10)
         invalid_values = [[], {}, A, (1, 2), Meter, meter_per_second_unit]
         for value in invalid_values:
-            with pytest.raises(TypeError) as error_1:
+            with pytest.raises(InvalidOperationError):
                 meter + value
-            with pytest.raises(TypeError) as error_2:
+            with pytest.raises(InvalidOperationError):
                 meter_per_second + value
-            assert str(error_1.value) == f"{type(value)} is not from type {type(meter)}"
-            assert str(error_2.value) == f"{type(value)} is not from type {type(meter_per_second)}"
-        with pytest.raises(TypeError) as error:
+        with pytest.raises(DimensionMismatchError):
             meter_per_second + Second(10)
-        assert str(error.value) == f"Dimensions do not match {meter_per_second_unit.scale.dimension} != {Second.scale.dimension}"
 
     @staticmethod
     def test_subtraction(meter_per_second_unit):
@@ -364,16 +343,12 @@ class TestUnit:
         meter_per_second = meter_per_second_unit(10)
         invalid_values = [[], {}, A, (1, 2), Meter, meter_per_second_unit]
         for value in invalid_values:
-            with pytest.raises(TypeError) as error_1:
+            with pytest.raises(InvalidOperationError):
                 meter - value
-            with pytest.raises(TypeError) as error_2:
+            with pytest.raises(InvalidOperationError):
                 meter_per_second - value
-            assert str(error_1.value) == f"{type(value)} is not from type {type(meter)}"
-            assert str(error_2.value) == f"{type(value)} is not from type {type(meter_per_second)}"
-        with pytest.raises(TypeError) as error:
-            meter_per_second + Second(10)
-        assert str(
-            error.value) == f"Dimensions do not match {meter_per_second_unit.scale.dimension} != {Second.scale.dimension}"
+        with pytest.raises(DimensionMismatchError):
+            meter_per_second - Second(10)
 
     @staticmethod
     def test_conversion(joule_unit, calories_unit):
@@ -397,15 +372,12 @@ class TestUnit:
         meter_per_second = meter_per_second_unit(10)
         invalid_values = [[], {}, A, (1, 2)]
         for value in invalid_values:
-            with pytest.raises(TypeError) as error_1:
+            with pytest.raises(InvalidConversionError):
                 meter.convert(value)
-            with pytest.raises(TypeError) as error_2:
+            with pytest.raises(InvalidConversionError):
                 meter_per_second.convert(value)
-            assert str(error_1.value) == f"Invalid param type {type(value)} != {type(MetaUnit)}"
-            assert str(error_2.value) == f"Invalid param type {type(value)} != {type(MetaUnit)}"
-        with pytest.raises(TypeError) as error:
+        with pytest.raises(DimensionMismatchError):
             meter_per_second.convert(Second)
-        assert str(error.value) == "Dimensions do not match"
 
     @staticmethod
     def test_to_si(calories_unit, kilometer_unit, joule_unit):

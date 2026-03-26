@@ -24,7 +24,7 @@ jobs:
 
       - name: Install maturin and test dependencies
         run: |
-          pip install maturin pytest ruff kobject
+          pip install maturin pytest pytest-cov hypothesis ruff kobject
 
       - name: Build package
         run: maturin build --release
@@ -35,8 +35,18 @@ jobs:
       - name: Run linting
         run: ruff check .
 
-      - name: Run tests
-        run: pytest tests/ -v
+      - name: Run tests with coverage
+        run: pytest tests/ -v --cov=physities --cov-report=xml --cov-report=html
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-physities
+          fail_ci_if_error: false
+          verbose: true
 
   build:
     needs: test

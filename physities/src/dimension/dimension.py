@@ -1,9 +1,8 @@
 from dataclasses import dataclass
 from typing import Self
 
-
-
 from physities.src.dimension.base_dimensions import BaseDimension
+from physities.src.exceptions import InvalidDimensionError, InvalidOperationError, InvalidPowerError
 
 SYMBOLS = {
     BaseDimension.LENGTH: "L",
@@ -32,6 +31,37 @@ NUMBER_STR_TO_POWER_STR = {
 
 @dataclass(frozen=True, slots=True)
 class Dimension:
+    """Represents physical dimensions using the 7 SI base dimensions.
+
+    A Dimension object stores exponents for each of the 7 SI base dimensions:
+    LENGTH, MASS, TEMPERATURE, TIME, AMOUNT, ELECTRIC_CURRENT, and LUMINOUS_INTENSITY.
+
+    Dimensions are immutable (frozen dataclass) and support arithmetic operations
+    that combine dimensions algebraically (e.g., velocity = length / time).
+
+    Attributes:
+        dimensions_tuple: A 7-element tuple of floats representing the exponent
+            of each base dimension in order.
+
+    Examples:
+        >>> # Create a velocity dimension (length / time)
+        >>> velocity = Dimension.new_instance((1, 0, 0, -1, 0, 0, 0))
+        >>> velocity.length
+        1
+        >>> velocity.time
+        -1
+
+        >>> # Create using factory methods
+        >>> length = Dimension.new_length()
+        >>> time = Dimension.new_time()
+        >>> velocity = length + (time * -1)
+
+        >>> # Check if dimensionless
+        >>> dimensionless = Dimension.new_dimensionless()
+        >>> dimensionless.get_dimensions()
+        []
+    """
+
     dimensions_tuple: tuple[
         float,
         float,
@@ -43,67 +73,151 @@ class Dimension:
     ]
 
     @property
-    def length(self):
+    def length(self) -> float:
+        """The length dimension exponent (L)."""
         return self.dimensions_tuple[BaseDimension.LENGTH]
 
     @property
-    def mass(self):
+    def mass(self) -> float:
+        """The mass dimension exponent (M)."""
         return self.dimensions_tuple[BaseDimension.MASS]
 
     @property
-    def temperature(self):
+    def temperature(self) -> float:
+        """The temperature dimension exponent (Θ)."""
         return self.dimensions_tuple[BaseDimension.TEMPERATURE]
 
     @property
-    def time(self):
+    def time(self) -> float:
+        """The time dimension exponent (T)."""
         return self.dimensions_tuple[BaseDimension.TIME]
 
     @property
-    def amount(self):
+    def amount(self) -> float:
+        """The amount of substance dimension exponent (N)."""
         return self.dimensions_tuple[BaseDimension.AMOUNT]
 
     @property
-    def electric_current(self):
+    def electric_current(self) -> float:
+        """The electric current dimension exponent (I)."""
         return self.dimensions_tuple[BaseDimension.ELECTRIC_CURRENT]
 
     @property
-    def luminous_intensity(self):
+    def luminous_intensity(self) -> float:
+        """The luminous intensity dimension exponent (J)."""
         return self.dimensions_tuple[BaseDimension.LUMINOUS_INTENSITY]
 
     @classmethod
     def new_time(cls, power: float = None) -> Self:
+        """Create a time dimension with the given power.
+
+        Args:
+            power: The exponent for the time dimension. Defaults to 1.
+
+        Returns:
+            A new Dimension with only time dimension set.
+
+        Example:
+            >>> time = Dimension.new_time()  # T^1
+            >>> time_squared = Dimension.new_time(power=2)  # T^2
+        """
         return cls.__new_base_unit(base_unit=BaseDimension.TIME, power=power)
 
     @classmethod
     def new_length(cls, power: float = None) -> Self:
+        """Create a length dimension with the given power.
+
+        Args:
+            power: The exponent for the length dimension. Defaults to 1.
+
+        Returns:
+            A new Dimension with only length dimension set.
+
+        Example:
+            >>> length = Dimension.new_length()  # L^1
+            >>> area = Dimension.new_length(power=2)  # L^2
+        """
         return cls.__new_base_unit(base_unit=BaseDimension.LENGTH, power=power)
 
     @classmethod
     def new_temperature(cls, power: float = None) -> Self:
+        """Create a temperature dimension with the given power.
+
+        Args:
+            power: The exponent for the temperature dimension. Defaults to 1.
+
+        Returns:
+            A new Dimension with only temperature dimension set.
+        """
         return cls.__new_base_unit(base_unit=BaseDimension.TEMPERATURE, power=power)
 
     @classmethod
     def new_mass(cls, power: float = None) -> Self:
+        """Create a mass dimension with the given power.
+
+        Args:
+            power: The exponent for the mass dimension. Defaults to 1.
+
+        Returns:
+            A new Dimension with only mass dimension set.
+
+        Example:
+            >>> mass = Dimension.new_mass()  # M^1
+        """
         return cls.__new_base_unit(base_unit=BaseDimension.MASS, power=power)
 
     @classmethod
     def new_amount(cls, power: float = None) -> Self:
+        """Create an amount of substance dimension with the given power.
+
+        Args:
+            power: The exponent for the amount dimension. Defaults to 1.
+
+        Returns:
+            A new Dimension with only amount dimension set.
+        """
         return cls.__new_base_unit(base_unit=BaseDimension.AMOUNT, power=power)
 
     @classmethod
     def new_electric_current(cls, power: float = None) -> Self:
+        """Create an electric current dimension with the given power.
+
+        Args:
+            power: The exponent for the electric current dimension. Defaults to 1.
+
+        Returns:
+            A new Dimension with only electric current dimension set.
+        """
         return cls.__new_base_unit(
             base_unit=BaseDimension.ELECTRIC_CURRENT, power=power
         )
 
     @classmethod
     def new_luminous_intensity(cls, power: float = None) -> Self:
+        """Create a luminous intensity dimension with the given power.
+
+        Args:
+            power: The exponent for the luminous intensity dimension. Defaults to 1.
+
+        Returns:
+            A new Dimension with only luminous intensity dimension set.
+        """
         return cls.__new_base_unit(
             base_unit=BaseDimension.LUMINOUS_INTENSITY, power=power
         )
 
     @classmethod
     def new_dimensionless(cls) -> Self:
+        """Create a dimensionless dimension (all exponents are zero).
+
+        Returns:
+            A new Dimension with all exponents set to zero.
+
+        Example:
+            >>> dimensionless = Dimension.new_dimensionless()
+            >>> dimensionless.get_dimensions()
+            []
+        """
         return Dimension(dimensions_tuple=(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
 
     @classmethod
@@ -111,7 +225,7 @@ class Dimension:
         if power is None:
             power = 1
         elif not isinstance(power, (int, float)):
-            raise TypeError("The exponentiation must be a int or a float.")
+            raise InvalidDimensionError("The exponentiation must be an int or a float.")
         dimensions_tuple = [0.0 for _ in BaseDimension]
         dimensions_tuple[base_unit] = power
         return cls.new_instance(dimensions_tuple=tuple(dimensions_tuple))
@@ -120,17 +234,53 @@ class Dimension:
     def new_instance(
         cls,
         dimensions_tuple: tuple[float, float, float, float, float, float, float],
-    ):
+    ) -> Self:
+        """Create a new Dimension from a tuple of exponents.
+
+        Args:
+            dimensions_tuple: A 7-element tuple of exponents in order:
+                (LENGTH, MASS, TEMPERATURE, TIME, AMOUNT, ELECTRIC_CURRENT, LUMINOUS_INTENSITY)
+
+        Returns:
+            A new Dimension instance.
+
+        Example:
+            >>> # Velocity dimension (L^1 * T^-1)
+            >>> velocity = Dimension.new_instance((1, 0, 0, -1, 0, 0, 0))
+        """
         return Dimension(dimensions_tuple=dimensions_tuple)
 
-    def get_dimensions(self):
+    def get_dimensions(self) -> list[BaseDimension]:
+        """Get the list of non-zero base dimensions.
+
+        Returns:
+            A list of BaseDimension values that have non-zero exponents.
+
+        Example:
+            >>> velocity = Dimension.new_instance((1, 0, 0, -1, 0, 0, 0))
+            >>> velocity.get_dimensions()
+            [<BaseDimension.LENGTH: 0>, <BaseDimension.TIME: 3>]
+        """
         return [
             BaseDimension(i)
             for i in range(len(self.dimensions_tuple))
             if self.dimensions_tuple[i] != 0
         ]
 
-    def get(self, index: BaseDimension):
+    def get(self, index: BaseDimension) -> float:
+        """Get the exponent for a specific base dimension.
+
+        Args:
+            index: The BaseDimension to query.
+
+        Returns:
+            The exponent value for that dimension.
+
+        Example:
+            >>> velocity = Dimension.new_instance((1, 0, 0, -1, 0, 0, 0))
+            >>> velocity.get(BaseDimension.LENGTH)
+            1
+        """
         return self.dimensions_tuple[index]
 
     def __add__(self, other):
@@ -140,7 +290,7 @@ class Dimension:
             )
             return Dimension(dimensions_tuple=dimensions_tuple)
         else:
-            raise TypeError("Dimension only allow addition between same instance.")
+            raise InvalidOperationError("addition on Dimension", type(other), (Dimension,))
 
     def __radd__(self, other):
         try:
@@ -158,7 +308,7 @@ class Dimension:
             )
             return Dimension(dimensions_tuple=dimensions_tuple)
         else:
-            raise TypeError("Dimension only allow subtraction between same instance.")
+            raise InvalidOperationError("subtraction on Dimension", type(other), (Dimension,))
 
     def __rsub__(self, other):
         try:
@@ -172,28 +322,28 @@ class Dimension:
             dimensions_tuple = tuple(other * i for i in self.dimensions_tuple)
             return Dimension(dimensions_tuple=dimensions_tuple)
         else:
-            raise TypeError("Dimension only allow multiplication with int or floats.")
+            raise InvalidOperationError("multiplication on Dimension", type(other), (int, float))
 
     def __rmul__(self, other):
         if isinstance(other, (int, float)):
             dimensions_tuple = tuple(other * i for i in self.dimensions_tuple)
             return Dimension(dimensions_tuple=dimensions_tuple)
         else:
-            raise TypeError("Dimension only allow multiplication with int or floats.")
+            raise InvalidOperationError("multiplication on Dimension", type(other), (int, float))
 
     def __truediv__(self, other):
         if isinstance(other, (int, float)):
             dimensions_tuple = tuple(i / other for i in self.dimensions_tuple)
             return Dimension(dimensions_tuple=dimensions_tuple)
         else:
-            raise TypeError("Dimension only allow division by int or floats.")
+            raise InvalidOperationError("division on Dimension", type(other), (int, float))
 
     def __rtruediv__(self, other):
         if isinstance(other, (int, float)):
             dimensions_tuple = tuple(other / i for i in self.dimensions_tuple)
             return Dimension(dimensions_tuple=dimensions_tuple)
         else:
-            raise TypeError("Dimension only allow division by int or floats.")
+            raise InvalidOperationError("reverse division on Dimension", type(other), (int, float))
 
     def __eq__(self, other):
         if isinstance(other, Dimension) or issubclass(type(other), Dimension):
@@ -202,12 +352,22 @@ class Dimension:
         return False
 
     def __pow__(self, power, modulo=None):
-        raise TypeError("Exponentiation with Dimension is not allowed.")
+        raise InvalidPowerError("Dimension", power, "exponentiation with Dimension is not allowed")
 
     def __rpow__(self, power):
-        raise TypeError("Exponentiation with Dimension is not allowed.")
+        raise InvalidPowerError("Dimension", power, "exponentiation with Dimension is not allowed")
 
-    def show_dimension(self):
+    def show_dimension(self) -> str:
+        """Generate a human-readable string representation of the dimension.
+
+        Returns:
+            A string showing the dimension in fraction notation with superscript exponents.
+
+        Example:
+            >>> velocity = Dimension.new_instance((1, 0, 0, -1, 0, 0, 0))
+            >>> velocity.show_dimension()
+            'L¹ / t¹'
+        """
         numerator = ""
         denominator = ""
         for i in range(len(self.dimensions_tuple)):

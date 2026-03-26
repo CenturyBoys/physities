@@ -1,4 +1,5 @@
 from tests.fixtures import *
+from physities.src.exceptions import InvalidOperationError, InvalidPowerError
 
 
 @pytest.mark.unit
@@ -120,12 +121,8 @@ class TestScale:
 
         invalid_values = [(), {}, A, []]
         for i in invalid_values:
-            with pytest.raises(TypeError) as error:
+            with pytest.raises(InvalidOperationError):
                 joule_scale * i
-            assert (
-                str(error.value)
-                == f"{Scale} can only be multiplied by {Scale}, {int} or {float}. This operation is not implemented for {type(i)}."
-            )
 
     @staticmethod
     def test_division(
@@ -159,18 +156,10 @@ class TestScale:
 
         invalid_values = [(), {}, A, []]
         for i in invalid_values:
-            with pytest.raises(TypeError) as error:
+            with pytest.raises(InvalidOperationError):
                 joule_scale / i
-            with pytest.raises(TypeError) as error2:
+            with pytest.raises(InvalidOperationError):
                 i / joule_scale
-            assert (
-                str(error.value)
-                == f"{Scale} can only be divided by {Scale}, {int} or {float}. This operation is not implemented for {type(i)}."
-            )
-            assert (
-                str(error2.value)
-                == f"{Scale} can only divide {Scale}, {int} or {float}. This operation is not implemented for {type(i)}."
-            )
 
     @staticmethod
     def test_power(
@@ -197,6 +186,5 @@ class TestScale:
             pass
         invalid_values = [second_scale, [], {}, (), A]
         for i in invalid_values:
-            with pytest.raises(TypeError) as error:
+            with pytest.raises(InvalidPowerError):
                 meter_scale ** i
-            assert str(error.value) == f"{Scale} can only be powered by {int} or {float}. This operation is not implemented for {type(i)}."

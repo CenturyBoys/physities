@@ -1,10 +1,34 @@
 from typing import Self
 
-
+from physities.src.exceptions import (
+    DimensionMismatchError,
+    InvalidConversionError,
+    InvalidOperationError,
+    InvalidPowerError,
+)
 from physities.src.scale.scale import Scale
 
 
 class MetaUnit(type):
+    """Metaclass enabling operator overloading on Unit classes.
+
+    MetaUnit allows Unit types (not instances) to be combined using arithmetic
+    operators to create new composite unit types. This enables syntax like
+    ``Meter / Second`` to create a velocity unit type.
+
+    Attributes:
+        scale: The Scale defining this unit type's dimension and conversion factors.
+
+    Examples:
+        >>> # Create composite unit types
+        >>> Velocity = Meter / Second
+        >>> Acceleration = Meter / (Second ** 2)
+        >>> Force = Kilogram * Acceleration
+
+        >>> # Scale a unit type
+        >>> Kilometer = Meter * 1000
+    """
+
     scale: Scale
 
     def __hash__(self):
@@ -22,8 +46,10 @@ class MetaUnit(type):
         if isinstance(other, MetaUnit):
             new_scale = self.scale * other.scale
             return type(f"Unit", (Unit,), {"scale": new_scale, "value": None})
-        raise TypeError(
-            f"{self} only allows multiplication by {self}, {int}, and {float}"
+        raise InvalidOperationError(
+            f"multiplication on {self}",
+            type(other),
+            (type(self), int, float),
         )
 
     def __rmul__(self, other):
@@ -40,38 +66,90 @@ class MetaUnit(type):
         if isinstance(other, MetaUnit):
             new_scale = self.scale / other.scale
             return type(f"Unit", (Unit,), {"scale": new_scale, "value": None})
-        raise TypeError(f"{self} only allows division by {self}, {int}, and {float}")
+        raise InvalidOperationError(
+            f"division on {self}",
+            type(other),
+            (type(self), int, float),
+        )
 
     def __rtruediv__(self, other):
         if isinstance(other, (int, float)):
             new_scale = other / self.scale
             return type(f"Unit", (Unit,), {"scale": new_scale, "value": None})
-        raise TypeError(f"{self} can divide only {self}, {int} and {float}")
+        raise InvalidOperationError(
+            f"reverse division on {self}",
+            type(other),
+            (type(self), int, float),
+        )
 
     def __pow__(self, power, modulo=None):
         if isinstance(power, (int, float)):
             new_scale = self.scale**power
             return type(f"Unit", (Unit,), {"scale": new_scale, "value": None})
-        raise TypeError(f"{self} can only be powered by {int} and {float}")
+        raise InvalidPowerError(self, power)
 
     def __add__(self, other):
-        raise TypeError(f"Units with translated scale are not allowed yet.")
+        raise InvalidOperationError(
+            "addition on unit types",
+            type(other),
+        )
 
     def __sub__(self, other):
-        raise TypeError(f"Units with translated scale are not allowed yet.")
+        raise InvalidOperationError(
+            "subtraction on unit types",
+            type(other),
+        )
 
     def __radd__(self, other):
-        raise TypeError(f"Units with translated scale are not allowed yet.")
+        raise InvalidOperationError(
+            "addition on unit types",
+            type(other),
+        )
 
     def __rsub__(self, other):
-        raise TypeError(f"Units with translated scale are not allowed yet.")
+        raise InvalidOperationError(
+            "subtraction on unit types",
+            type(other),
+        )
 
 
 class Unit(metaclass=MetaUnit):
+    """Base class for physical quantity values with units.
+
+    Unit represents a physical quantity with both a numeric value and a unit
+    (defined by its Scale). It supports arithmetic operations that properly
+    handle unit conversions and dimensional analysis.
+
+    Attributes:
+        scale: The Scale defining this unit's dimension and conversion factors.
+        value: The numeric value in this unit.
+
+    Examples:
+        >>> # Create values with units
+        >>> distance = Meter(100)
+        >>> time = Second(10)
+
+        >>> # Arithmetic operations
+        >>> velocity = distance / time  # Creates a m/s value
+        >>> doubled = velocity * 2
+        >>> total = Meter(50) + Meter(30)
+
+        >>> # Unit conversion
+        >>> km = Meter(1000).convert(Kilometer)  # 1 km
+
+        >>> # Equality across units
+        >>> Meter(1000) == Kilometer(1)  # True
+    """
+
     scale: Scale
     value: float | int
 
     def __init__(self, value: float | int):
+        """Create a new Unit instance with the given value.
+
+        Args:
+            value: The numeric value in this unit.
+        """
         self.value = value
 
     def __eq__(self, other):
@@ -96,8 +174,10 @@ class Unit(metaclass=MetaUnit):
                 new_instance = type(self)(new_value)
                 new_instance.scale = self.scale
                 return new_instance
-            raise TypeError(f"Dimensions do not match {self.scale.dimension} != {other.scale.dimension}")
-        raise TypeError(f"{type(other)} is not from type {type(self)}")
+            raise DimensionMismatchError(
+                self.scale.dimension, other.scale.dimension, "addition"
+            )
+        raise InvalidOperationError("addition", type(other), (Unit,))
 
     def __sub__(self, other):
         if isinstance(other, Unit):
@@ -106,8 +186,10 @@ class Unit(metaclass=MetaUnit):
                 new_instance = type(self)(new_value)
                 new_instance.scale = self.scale
                 return new_instance
-            raise TypeError(f"Dimensions do not match {self.scale.dimension} != {other.scale.dimension}")
-        raise TypeError(f"{type(other)} is not from type {type(self)}")
+            raise DimensionMismatchError(
+                self.scale.dimension, other.scale.dimension, "subtraction"
+            )
+        raise InvalidOperationError("subtraction", type(other), (Unit,))
 
     def __mul__(self, other):
         if isinstance(other, (int, float)):
@@ -124,7 +206,11 @@ class Unit(metaclass=MetaUnit):
             new_instance = type(self)(new_value)
             new_instance.scale = new_scale
             return new_instance
-        raise TypeError(f"{type(self)} can be multiplied only by {type(self)}, {float} and {int}")
+        raise InvalidOperationError(
+            f"multiplication on {type(self).__name__}",
+            type(other),
+            (Unit, int, float),
+        )
 
     def __rmul__(self, other):
         try:
@@ -148,7 +234,11 @@ class Unit(metaclass=MetaUnit):
             new_instance = type(self)(new_value)
             new_instance.scale = new_scale
             return new_instance
-        raise TypeError(f"{type(self)} only allows division by {type(self)}, {int} and {float}")
+        raise InvalidOperationError(
+            f"division on {type(self).__name__}",
+            type(other),
+            (Unit, int, float),
+        )
 
     def __rtruediv__(self, other):
         if isinstance(other, (int, float)):
@@ -157,7 +247,11 @@ class Unit(metaclass=MetaUnit):
             new_instance = type(self)(new_value)
             new_instance.scale = new_scale
             return new_instance
-        raise TypeError(f"{type(self)} can divide only {type(self)}, {int} and {float}")
+        raise InvalidOperationError(
+            f"reverse division on {type(self).__name__}",
+            type(other),
+            (Unit, int, float),
+        )
 
     def __pow__(self, power, modulo=None):
         if isinstance(power, (int, float)):
@@ -166,9 +260,20 @@ class Unit(metaclass=MetaUnit):
             new_scale = self.scale**power
             new_instance.scale = new_scale
             return new_instance
-        raise TypeError(f"{type(self)} can only be powered by {int} and {float}")
+        raise InvalidPowerError(type(self).__name__, power)
 
-    def to_si(self):
+    def to_si(self) -> Self:
+        """Convert this value to SI base units.
+
+        Returns:
+            A new Unit instance with the value in SI base units.
+
+        Example:
+            >>> km = Kilometer(5)
+            >>> m = km.to_si()
+            >>> m.value
+            5000.0
+        """
         new_value = self.value * self.scale.conversion_factor
         new_instance = type(self)(new_value)
         new_scale = Scale.new(dimension=self.scale.dimension)
@@ -176,6 +281,24 @@ class Unit(metaclass=MetaUnit):
         return new_instance
 
     def convert(self, unit: MetaUnit | Self) -> Self:
+        """Convert this value to a different unit with the same dimension.
+
+        Args:
+            unit: The target unit type or instance to convert to.
+
+        Returns:
+            A new Unit instance with the value in the target unit.
+
+        Raises:
+            DimensionMismatchError: If the dimensions don't match.
+            InvalidConversionError: If the target is not a valid unit.
+
+        Example:
+            >>> speed_ms = (Meter / Second)(10)
+            >>> speed_kmh = speed_ms.convert(Kilometer / Hour)
+            >>> speed_kmh.value
+            36.0
+        """
         if isinstance(unit, (MetaUnit, Unit)):
             if self.scale.dimension == unit.scale.dimension:
                 new_value = (
@@ -184,6 +307,8 @@ class Unit(metaclass=MetaUnit):
                 new_instance = type(self)(new_value)
                 new_instance.scale = unit.scale
                 return new_instance
-            raise TypeError("Dimensions do not match")
-        raise TypeError(f"Invalid param type {type(unit)} != {type(MetaUnit)}")
+            raise DimensionMismatchError(
+                self.scale.dimension, unit.scale.dimension, "conversion"
+            )
+        raise InvalidConversionError(type(self).__name__, type(unit).__name__)
 

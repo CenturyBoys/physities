@@ -6,21 +6,67 @@ authors = [{name = "M4tus4l3m", email = "lucas.sievers@gmail.com"}]
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
+keywords = [
+    "physics",
+    "units",
+    "dimensional-analysis",
+    "unit-conversion",
+    "scientific-computing",
+    "rust",
+    "pyo3",
+    "quantities",
+    "measurements",
+    "si-units",
+]
 classifiers = [
-    "Programming Language :: Rust",
-    "Programming Language :: Python :: Implementation :: CPython",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Rust",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
 ]
 dependencies = [
     "kobject>=0.6.1,<1.0.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/M4tus4l3m/physities"
+Documentation = "https://m4tus4l3m.github.io/physities/"
+Repository = "https://github.com/M4tus4l3m/physities"
+Changelog = "https://github.com/M4tus4l3m/physities/blob/main/CHANGELOG.md"
+"Bug Tracker" = "https://github.com/M4tus4l3m/physities/issues"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0.0",
+    "pytest-cov>=4.0.0",
+    "hypothesis>=6.0.0",
     "ruff>=0.9.0",
     "maturin>=1.0,<2.0",
+]
+benchmark = [
+    "pytest-benchmark>=4.0.0",
+    "numpy>=1.24.0",
+    "rich>=13.0.0",
+]
+docs = [
+    "sphinx>=7.0.0",
+    "furo>=2024.0.0",
+    "myst-parser>=2.0.0",
+    "sphinx-autodoc-typehints>=2.0.0",
+    "sphinx-copybutton>=0.5.0",
+]
+all = [
+    "physities[dev,benchmark,docs]",
 ]
 
 [build-system]
@@ -41,6 +87,23 @@ select = ["E", "F", "W", "I"]
 ignore = ["E501", "F401", "F403", "F405", "E741", "W292", "I001", "F541", "F841", "E721"]
 
 [tool.pytest.ini_options]
+testpaths = ["tests"]
 markers = [
-    "unit: marks tests as unit tests",
+    "unit: unit tests",
+    "integration: integration tests",
+    "property: property-based tests",
+    "benchmark: benchmark tests",
+]
+addopts = "--cov=physities --cov-report=xml --cov-report=html"
+
+[tool.coverage.run]
+source = ["physities"]
+omit = ["tests/*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
 ]
