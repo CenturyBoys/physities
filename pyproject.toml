@@ -89,6 +89,7 @@ ignore = ["E501", "F401", "F403", "F405", "E741", "W292", "I001", "F541", "F841"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py", "bench_*.py"]
 markers = [
     "unit: unit tests",
     "integration: integration tests",
