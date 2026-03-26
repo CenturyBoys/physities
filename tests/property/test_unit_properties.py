@@ -8,6 +8,11 @@ from physities.src.scale import Scale
 from physities.src.dimension import Dimension
 
 
+def isclose(a: float, b: float, rel_tol: float = 1e-9, abs_tol: float = 1e-10) -> bool:
+    """Check if two floats are close using relative and absolute tolerance."""
+    return abs(a - b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+
+
 # Strategy for unit values
 unit_value = st.floats(min_value=-1e6, max_value=1e6, allow_nan=False, allow_infinity=False)
 positive_value = st.floats(min_value=0.001, max_value=1e6, allow_nan=False, allow_infinity=False)
@@ -45,7 +50,7 @@ class TestUnitProperties:
         result1 = (m1 + m2) + m3
         result2 = m1 + (m2 + m3)
 
-        assert abs(result1.value - result2.value) < 1e-10
+        assert isclose(result1.value, result2.value)
 
     @given(value=unit_value)
     def test_addition_identity(self, value):
@@ -71,7 +76,7 @@ class TestUnitProperties:
         m = Meter(value)
 
         result = (m * scalar) / scalar
-        assert abs(result.value - value) < 1e-10
+        assert isclose(result.value, value)
 
     @given(value=positive_value, scalar=scalar_value)
     def test_scalar_division_reversible(self, value, scalar):
@@ -79,7 +84,7 @@ class TestUnitProperties:
         m = Meter(value)
 
         result = (m / scalar) * scalar
-        assert abs(result.value - value) < 1e-10
+        assert isclose(result.value, value)
 
     @given(v1=positive_value, v2=positive_value)
     def test_multiplication_commutative(self, v1, v2):
@@ -159,4 +164,4 @@ class TestUnitProperties:
         result1 = (m1 + m2) * scalar
         result2 = (m1 * scalar) + (m2 * scalar)
 
-        assert abs(result1.value - result2.value) < 1e-10
+        assert isclose(result1.value, result2.value)

@@ -6,6 +6,13 @@ from physities.src.dimension import Dimension
 from physities.src.scale import Scale
 from physities.src.unit import Meter, Second, Kilometer, Kilogram
 
+# Try to import Rust backend
+try:
+    from physities._physities_core import PhysicalScale
+    HAS_RUST = True
+except ImportError:
+    HAS_RUST = False
+
 
 @pytest.mark.integration
 class TestPythonRustInterop:
@@ -102,3 +109,88 @@ class TestPythonRustInterop:
         # Division by scalar
         halved = v2 / 2
         assert abs(halved.value - 1.0) < 1e-15
+
+
+@pytest.mark.integration
+class TestRustBackendIntegration:
+    """Test Rust backend integration methods."""
+
+    def test_has_rust_backend(self):
+        """Test has_rust_backend() returns correct value."""
+        assert Scale.has_rust_backend() == HAS_RUST
+
+    @pytest.mark.skipif(not HAS_RUST, reason="Rust backend not available")
+    def test_to_rust_and_from_rust(self):
+        """Test converting Scale to/from Rust PhysicalScale."""
+        # Create a Python Scale
+        velocity_dim = Dimension.new_instance((1, 0, 0, -1, 0, 0, 0))
+        py_scale = Scale.new(
+            dimension=velocity_dim,
+            from_base_scale_conversions=(1000, 1, 1, 3600, 1, 1, 1),
+            rescale_value=1.0,
+        )
+
+        # Convert to Rust
+        rust_scale = py_scale.to_rust()
+        assert rust_scale is not None
+        assert rust_scale.length == 1.0
+        assert rust_scale.time == -1.0
+
+        # Convert back to Python
+        py_scale_back = Scale.from_rust(rust_scale)
+        assert py_scale == py_scale_back
+
+    @pytest.mark.skipif(not HAS_RUST, reason="Rust backend not available")
+    def test_rust_multiply_scale(self):
+        """Test Scale multiplication uses Rust backend."""
+        m_scale = Meter.scale
+        s_scale = Second.scale
+
+        # This should use Rust internally
+        velocity_scale = m_scale / s_scale
+
+        assert velocity_scale.dimension.length == 1.0
+        assert velocity_scale.dimension.time == -1.0
+
+    @pytest.mark.skipif(not HAS_RUST, reason="Rust backend not available")
+    def test_rust_power_operation(self):
+        """Test Scale power uses Rust backend."""
+        m_scale = Meter.scale
+
+        # This should use Rust internally
+        m2_scale = m_scale ** 2
+
+        assert m2_scale.dimension.length == 2.0
+
+    @pytest.mark.skipif(not HAS_RUST, reason="Rust backend not available")
+    def test_rust_scalar_operations(self):
+        """Test scalar multiplication/division uses Rust backend."""
+        m_scale = Meter.scale
+
+        # Scalar multiplication
+        km_scale = m_scale * 1000
+        assert km_scale.conversion_factor == 1000.0
+
+        # Scalar division
+        mm_scale = m_scale / 1000
+        assert abs(mm_scale.conversion_factor - 0.001) < 1e-15
+
+        # Reverse division (1 / scale)
+        inv_m_scale = 1 / m_scale
+        assert inv_m_scale.dimension.length == -1.0
+
+    @pytest.mark.skipif(not HAS_RUST, reason="Rust backend not available")
+    def test_rust_serialization(self):
+        """Test Rust PhysicalScale serialization."""
+        m_scale = Meter.scale
+        rust_scale = m_scale.to_rust()
+
+        # JSON serialization
+        json_str = rust_scale.to_json()
+        restored = PhysicalScale.from_json(json_str)
+        assert rust_scale.equals(restored)
+
+        # Int64 encoding
+        encoded = rust_scale.to_dimension_int64()
+        restored_from_int = PhysicalScale.from_dimension_int64(encoded)
+        assert rust_scale.same_dimension(restored_from_int)
