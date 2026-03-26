@@ -26,11 +26,8 @@ jobs:
         run: |
           pip install maturin pytest pytest-cov hypothesis ruff kobject
 
-      - name: Build package
-        run: maturin build --release
-
-      - name: Install package
-        run: pip install target/wheels/*.whl
+      - name: Build and install package
+        run: maturin develop --release
 
       - name: Run linting
         run: ruff check .
