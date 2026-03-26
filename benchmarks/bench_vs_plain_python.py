@@ -3,6 +3,8 @@
 import pytest
 from dataclasses import dataclass
 
+from physities.src.unit import Meter, Second, Kilometer, Hour
+
 
 # Plain Python implementations for comparison
 @dataclass
@@ -34,10 +36,6 @@ class PlainQuantity:
 def plain_convert(value: float, factor: float) -> float:
     """Plain Python conversion."""
     return value * factor
-
-
-# Import physities
-from physities.src.unit import Meter, Second, Kilometer, Hour
 
 
 @pytest.mark.benchmark(group="vs-plain-python")
