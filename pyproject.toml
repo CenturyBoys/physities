@@ -81,6 +81,7 @@ python-source = "."
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+extend-exclude = ["*.ipynb"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"]
