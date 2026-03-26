@@ -432,7 +432,7 @@ class Scale(Kobject):
 
     def __rtruediv__(self, other):
         # Use Rust backend when enabled (disabled by default for single ops)
-        if _USE_RUST_FOR_OPS and isinstance(other, (int, float)):
+        if _HAS_RUST and _USE_RUST_FOR_OPS and isinstance(other, (int, float)):
             rust_result = _scale_to_rust(self).rdivide_scalar(float(other))
             return _rust_to_scale(rust_result)
 
@@ -462,7 +462,7 @@ class Scale(Kobject):
 
     def __pow__(self, power, modulo=None):
         # Use Rust backend when enabled (disabled by default for single ops)
-        if _USE_RUST_FOR_OPS and isinstance(power, (int, float)):
+        if _HAS_RUST and _USE_RUST_FOR_OPS and isinstance(power, (int, float)):
             rust_result = _scale_to_rust(self).power(float(power))
             return _rust_to_scale(rust_result)
 
