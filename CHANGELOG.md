@@ -7,7 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-03-27
+
 ### Added
+- **UnitArray** for batch operations on arrays of values
+  - NumPy-backed vectorized operations (~100x faster than loops)
+  - Supports arithmetic, reductions (sum, mean, std, min, max)
+  - Batch unit conversions
+- **Database serialization** for Unit values
+  - `to_tuple()` / `from_tuple()` for compact storage (si_value, dimension_int64)
+  - `to_dict()` / `from_dict()` for full round-trip serialization
 - Custom exception hierarchy for better error handling
   - `PhysitiesError` base exception
   - `DimensionMismatchError` for incompatible dimensions
@@ -19,21 +28,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Property-based tests using Hypothesis
   - Edge case tests for boundary conditions
 - Benchmark suite with pytest-benchmark
-  - Conversion benchmarks
-  - Comparison vs plain Python
-  - Comparison vs NumPy
+  - Performance tracking over time
+  - Comparison vs plain Python and NumPy
+  - Interactive benchmark page at `/dev/bench/`
 - CI/CD improvements
   - Codecov integration for coverage tracking
-  - Benchmark CI with performance tracking
-  - Sphinx documentation with GitHub Pages deployment
+  - Benchmark CI with GitHub Pages deployment
+  - Sphinx documentation
 - Comprehensive docstrings for all public APIs
-- Sphinx documentation with tutorials and API reference
 
 ### Changed
 - Improved error messages with more context
 - Updated pyproject.toml with full metadata and classifiers
 
-## [0.1.3] - 2024-XX-XX
+## [0.1.3] - 2025-01-15
 
 ### Added
 - Rust core with PyO3 for high-performance operations
@@ -42,9 +50,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - JSON and int64 serialization for scales
 
 ### Changed
-- Improved performance for scale operations (50-100x speedup)
+- Improved performance for scale operations
 
-## [0.1.2] - 2024-XX-XX
+## [0.1.2] - 2024-12-01
 
 ### Added
 - CI/CD pipeline with GitHub Actions
@@ -54,7 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Improved code organization
 
-## [0.1.1] - 2024-XX-XX
+## [0.1.1] - 2024-11-15
 
 ### Added
 - Kobject integration for attribute validation
@@ -63,7 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Minor bug fixes in unit conversion
 
-## [0.1.0] - 2024-XX-XX
+## [0.1.0] - 2024-10-01
 
 ### Added
 - Initial release
@@ -73,7 +81,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unit conversion with dimensional analysis
 - Basic arithmetic operations on physical quantities
 
-[Unreleased]: https://github.com/CenturyBoys/physities/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/CenturyBoys/physities/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/CenturyBoys/physities/compare/v0.1.3...v0.2.0
 [0.1.3]: https://github.com/CenturyBoys/physities/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/CenturyBoys/physities/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/CenturyBoys/physities/compare/v0.1.0...v0.1.1

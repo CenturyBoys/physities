@@ -8,7 +8,7 @@
 [![PyPI](https://badge.fury.io/py/physities.svg)](https://pypi.org/project/physities/)
 [![Python](https://img.shields.io/pypi/pyversions/physities.svg)](https://pypi.org/project/physities/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue.svg)](https://m4tus4l3m.github.io/physities/)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue.svg)](https://centuryboys.github.io/physities/)
 
 A high-performance Python library for representing and working with physical quantities and units. Features dimensional analysis, unit conversion, and mathematical operations on physical measurements, powered by a Rust core for optimal performance.
 
@@ -19,8 +19,10 @@ A high-performance Python library for representing and working with physical qua
 - Unit conversion with compile-time dimension checking
 - Elegant operator syntax (`Meter / Second` creates velocity units)
 - High-performance Rust backend using ndarray for linear algebra
+- **UnitArray** for batch operations on arrays of values
 - NumPy interoperability
 - Compact serialization (int64 encoding for dimensions)
+- Database-ready serialization (`to_tuple()`, `to_dict()`)
 
 ## Installation
 
@@ -183,6 +185,49 @@ from physities.src.unit import Meter
 MyUnit = 201.168 * Meter  # Equivalent to Furlong
 ```
 
+### Batch Operations with UnitArray
+
+For high-performance operations on many values, use `UnitArray`:
+
+```python
+from physities.src.unit import Meter, Kilometer, UnitArray
+import numpy as np
+
+# Create array of 10,000 measurements
+distances = UnitArray(Meter, np.random.rand(10000) * 1000)
+
+# Batch operations (vectorized, ~100x faster than loops)
+total = distances.sum()           # Returns a single Meter
+average = distances.mean()        # Returns a single Meter
+doubled = distances * 2           # Returns UnitArray
+
+# Convert all values at once
+km_distances = distances.convert(Kilometer)
+```
+
+### Database Serialization
+
+Units can be serialized for database storage:
+
+```python
+from physities.src.unit import Meter, Second
+from physities.src.unit.unit import Unit
+
+velocity = (Meter / Second)(25)
+
+# Compact format: (si_value, dimension_int64)
+data = velocity.to_tuple()  # (25.0, 61441)
+
+# Store in database: INSERT INTO measurements (value, dimension) VALUES (25.0, 61441)
+
+# Restore from database
+restored = Unit.from_tuple(data)
+
+# Full format (preserves original unit)
+full_data = velocity.to_dict()
+restored = Unit.from_dict(full_data)
+```
+
 ### Using the Rust Backend Directly
 
 For high-performance operations, you can use the Rust `PhysicalScale` directly:
@@ -272,6 +317,48 @@ class Unit:
 
     def to_si(self) -> Unit:
         """Convert to SI base units."""
+
+    def to_tuple(self) -> tuple[float, int]:
+        """Serialize to (si_value, dimension_int64) for database storage."""
+
+    def to_dict(self) -> dict:
+        """Serialize to dictionary with full scale information."""
+
+    @classmethod
+    def from_tuple(cls, data: tuple) -> Unit:
+        """Restore from compact tuple format."""
+
+    @classmethod
+    def from_dict(cls, data: dict) -> Unit:
+        """Restore from dictionary format."""
+```
+
+### UnitArray Class
+
+High-performance batch operations on arrays of values.
+
+```python
+class UnitArray:
+    unit_type: MetaUnit  # The unit class (e.g., Meter)
+    values: np.ndarray   # NumPy array of values
+    scale: Scale         # The scale definition
+
+    def __init__(self, unit_type: MetaUnit, values: ArrayLike): ...
+
+    # Arithmetic (vectorized)
+    def __add__(self, other: Unit | UnitArray) -> UnitArray: ...
+    def __mul__(self, scalar: float) -> UnitArray: ...
+
+    # Reductions (return single Unit)
+    def sum(self) -> Unit: ...
+    def mean(self) -> Unit: ...
+    def std(self) -> Unit: ...
+    def min(self) -> Unit: ...
+    def max(self) -> Unit: ...
+
+    # Conversion
+    def convert(self, target: MetaUnit) -> UnitArray: ...
+    def to_numpy(self) -> np.ndarray: ...
 ```
 
 ### Scale Class
@@ -382,7 +469,7 @@ class BaseDimension(IntEnum):
 
 ```bash
 # Clone repository
-git clone https://github.com/your-username/physities.git
+git clone https://github.com/CenturyBoys/physities.git
 cd physities
 
 # Install dependencies
@@ -433,14 +520,22 @@ maturin build --release -o dist
 
 ## Performance
 
-The Rust backend provides significant performance improvements for scale operations:
+Physities adds ~20x overhead vs raw Python floats for type safety. For batch operations, use `UnitArray` to get near-NumPy performance.
 
-| Operation | Python | Rust + ndarray | Speedup |
-|-----------|--------|----------------|---------|
-| Dimension add/sub | ~500ns | ~10ns | **50x** |
-| Scale multiply | ~1μs | ~20ns | **50x** |
-| Conversion factor | ~800ns | ~15ns | **50x** |
-| Batch ops (1000) | ~2ms | ~20μs | **100x** |
+| Operation | Plain Python | Physities | Overhead |
+|-----------|--------------|-----------|----------|
+| `a + b` (floats) | ~210 ns | ~25 µs | ~120x |
+| `a * b` (floats) | ~210 ns | ~48 µs | ~230x |
+| Create value | ~600 ns | ~780 ns | ~1.3x |
+| Create type | ~15 µs | ~39 µs | ~2.6x |
+
+**Batch operations (UnitArray):**
+
+| Operation | Loop (100 units) | UnitArray (100) | Speedup |
+|-----------|-----------------|-----------------|---------|
+| Add scalar | 2.3 ms | 22 µs | **100x** |
+
+See [benchmarks](https://centuryboys.github.io/physities/dev/bench/) for detailed performance data.
 
 ## License
 
