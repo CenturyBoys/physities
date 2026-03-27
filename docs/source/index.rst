@@ -75,6 +75,12 @@ Contents
    api/scale
    api/dimension
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Performance
+
+   benchmarks
+
 Indices and tables
 ==================
 
