@@ -47,6 +47,16 @@ jobs:
           cd docs
           make html
 
+      - name: Fetch benchmark data from gh-pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git fetch origin gh-pages:gh-pages || true
+          if git show gh-pages:dev/bench/index.html > /dev/null 2>&1; then
+            mkdir -p docs/build/html/dev/bench
+            git show gh-pages:dev/bench/index.html > docs/build/html/dev/bench/index.html
+            git show gh-pages:dev/bench/data.js > docs/build/html/dev/bench/data.js
+          fi
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
