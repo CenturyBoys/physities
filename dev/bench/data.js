@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1774571608522,
+  "lastUpdate": 1774571769566,
   "repoUrl": "https://github.com/CenturyBoys/physities",
   "entries": {
     "Physities Benchmarks": [
@@ -912,6 +912,86 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 5.209419346308247e-7",
             "extra": "mean: 1.9309817437098848 usec\nrounds: 87093"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "im.ximit@gmail.com",
+            "name": "Marco Sievers de Almeida",
+            "username": "XimitGaia"
+          },
+          "committer": {
+            "email": "im.ximit@gmail.com",
+            "name": "Marco Sievers de Almeida",
+            "username": "XimitGaia"
+          },
+          "distinct": true,
+          "id": "338e1285f5bc2ed8227fe5d6f6ab6e4627b0157c",
+          "message": "refactor: simplify benchmark tracking to 8 core metrics\n\nReplace 40+ detailed benchmarks with 8 key operations:\n- create_unit, create_composite_type\n- add_units, multiply_units, divide_units\n- convert_simple, convert_composite\n- power\n\nThe detailed benchmarks remain for local testing.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>",
+          "timestamp": "2026-03-26T21:35:16-03:00",
+          "tree_id": "2b811f6cb7e4568766c81074881ff66a850eb8d1",
+          "url": "https://github.com/CenturyBoys/physities/commit/338e1285f5bc2ed8227fe5d6f6ab6e4627b0157c"
+        },
+        "date": 1774571769120,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "benchmarks/bench_core.py::TestCoreBenchmarks::test_create_unit",
+            "value": 4971936.655376339,
+            "unit": "iter/sec",
+            "range": "stddev: 2.939282110664026e-8",
+            "extra": "mean: 201.1288697571495 nsec\nrounds: 107216"
+          },
+          {
+            "name": "benchmarks/bench_core.py::TestCoreBenchmarks::test_create_composite_type",
+            "value": 33674.52780325465,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00006471392901257904",
+            "extra": "mean: 29.696036299085087 usec\nrounds: 10992"
+          },
+          {
+            "name": "benchmarks/bench_core.py::TestCoreBenchmarks::test_add_units",
+            "value": 502790.7152219277,
+            "unit": "iter/sec",
+            "range": "stddev: 5.303436863185236e-7",
+            "extra": "mean: 1.9888990980245298 usec\nrounds: 103328"
+          },
+          {
+            "name": "benchmarks/bench_core.py::TestCoreBenchmarks::test_multiply_units",
+            "value": 41042.14029756191,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000002333115185348276",
+            "extra": "mean: 24.36520105310893 usec\nrounds: 11395"
+          },
+          {
+            "name": "benchmarks/bench_core.py::TestCoreBenchmarks::test_divide_units",
+            "value": 39694.11227463581,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0000023120635271728203",
+            "extra": "mean: 25.19265308369149 usec\nrounds: 15387"
+          },
+          {
+            "name": "benchmarks/bench_core.py::TestCoreBenchmarks::test_convert_simple",
+            "value": 813319.5636346707,
+            "unit": "iter/sec",
+            "range": "stddev: 5.957954054339557e-7",
+            "extra": "mean: 1.2295290125950824 usec\nrounds: 161499"
+          },
+          {
+            "name": "benchmarks/bench_core.py::TestCoreBenchmarks::test_convert_composite",
+            "value": 782850.9327200936,
+            "unit": "iter/sec",
+            "range": "stddev: 5.428493869467383e-7",
+            "extra": "mean: 1.2773823958098898 usec\nrounds: 196851"
+          },
+          {
+            "name": "benchmarks/bench_core.py::TestCoreBenchmarks::test_power",
+            "value": 70739.53132357642,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0000014929749927491694",
+            "extra": "mean: 14.136367336472796 usec\nrounds: 21498"
           }
         ]
       }
