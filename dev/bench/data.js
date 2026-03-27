@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1774571769566,
+  "lastUpdate": 1774571882808,
   "repoUrl": "https://github.com/CenturyBoys/physities",
   "entries": {
     "Physities Benchmarks": [
@@ -992,6 +992,100 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 0.0000014929749927491694",
             "extra": "mean: 14.136367336472796 usec\nrounds: 21498"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "im.ximit@gmail.com",
+            "name": "Marco Sievers de Almeida",
+            "username": "XimitGaia"
+          },
+          "committer": {
+            "email": "im.ximit@gmail.com",
+            "name": "Marco Sievers de Almeida",
+            "username": "XimitGaia"
+          },
+          "distinct": true,
+          "id": "ad5501323085d3f5033a1d8559e550052a2ffa81",
+          "message": "docs: add benchmark explanation and baseline comparison\n\n- Compare physities vs plain Python floats\n- Explain what values mean (iter/sec, higher = faster)\n- Document expected overhead (~10-50x for safety)\n- Add benchmarks page to docs navigation\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>",
+          "timestamp": "2026-03-26T21:36:58-03:00",
+          "tree_id": "29563ba76c491c5927471d2700844a971ea3ce53",
+          "url": "https://github.com/CenturyBoys/physities/commit/ad5501323085d3f5033a1d8559e550052a2ffa81"
+        },
+        "date": 1774571882013,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "benchmarks/bench_core.py::TestBaseline::test_python_float_add",
+            "value": 11154719.286893234,
+            "unit": "iter/sec",
+            "range": "stddev: 8.485933443234501e-9",
+            "extra": "mean: 89.6481546761108 nsec\nrounds: 76959"
+          },
+          {
+            "name": "benchmarks/bench_core.py::TestBaseline::test_python_float_multiply",
+            "value": 11133237.937145293,
+            "unit": "iter/sec",
+            "range": "stddev: 9.684231325283098e-9",
+            "extra": "mean: 89.82112891560928 nsec\nrounds: 104844"
+          },
+          {
+            "name": "benchmarks/bench_core.py::TestBaseline::test_python_float_divide",
+            "value": 11216097.030738395,
+            "unit": "iter/sec",
+            "range": "stddev: 1.0039204171789027e-8",
+            "extra": "mean: 89.15757391005964 nsec\nrounds: 105297"
+          },
+          {
+            "name": "benchmarks/bench_core.py::TestBaseline::test_python_convert",
+            "value": 10237890.071528578,
+            "unit": "iter/sec",
+            "range": "stddev: 1.0172847190121097e-8",
+            "extra": "mean: 97.67637599283191 nsec\nrounds: 101236"
+          },
+          {
+            "name": "benchmarks/bench_core.py::TestPhysities::test_unit_add",
+            "value": 523611.3106087821,
+            "unit": "iter/sec",
+            "range": "stddev: 6.233444451888163e-7",
+            "extra": "mean: 1.9098135959617444 usec\nrounds: 60165"
+          },
+          {
+            "name": "benchmarks/bench_core.py::TestPhysities::test_unit_multiply",
+            "value": 38758.51896126381,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00001536327240733211",
+            "extra": "mean: 25.80077946217253 usec\nrounds: 10225"
+          },
+          {
+            "name": "benchmarks/bench_core.py::TestPhysities::test_unit_divide",
+            "value": 38101.97365057427,
+            "unit": "iter/sec",
+            "range": "stddev: 0.0000025847327875935986",
+            "extra": "mean: 26.245359601862205 usec\nrounds: 17080"
+          },
+          {
+            "name": "benchmarks/bench_core.py::TestPhysities::test_unit_convert",
+            "value": 833514.8374037208,
+            "unit": "iter/sec",
+            "range": "stddev: 5.416436549109194e-7",
+            "extra": "mean: 1.199738691053007 usec\nrounds: 157928"
+          },
+          {
+            "name": "benchmarks/bench_core.py::TestCreation::test_create_simple",
+            "value": 4713047.634091467,
+            "unit": "iter/sec",
+            "range": "stddev: 3.079992057130605e-8",
+            "extra": "mean: 212.17693467949522 nsec\nrounds: 193051"
+          },
+          {
+            "name": "benchmarks/bench_core.py::TestCreation::test_create_composite_type",
+            "value": 33098.9746631767,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00011558808724322061",
+            "extra": "mean: 30.212416250842992 usec\nrounds: 11827"
           }
         ]
       }
