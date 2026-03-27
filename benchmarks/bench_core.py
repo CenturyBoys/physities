@@ -44,6 +44,31 @@ def test_baseline_convert(benchmark):
     benchmark(lambda: value / 1000)
 
 
+def test_baseline_create_float(benchmark):
+    """Baseline: create a float (for comparison with Unit creation)."""
+    benchmark.name = "Python: float(100)"
+    benchmark(lambda: float(100))
+
+
+class SimpleClass:
+    """Minimal class for baseline comparison."""
+    __slots__ = ('value',)
+    def __init__(self, value):
+        self.value = value
+
+
+def test_baseline_create_class(benchmark):
+    """Baseline: create a simple class instance (comparable to Unit)."""
+    benchmark.name = "Python: SimpleClass(100)"
+    benchmark(lambda: SimpleClass(100))
+
+
+def test_baseline_create_type(benchmark):
+    """Baseline: create a class dynamically with type() (comparable to Meter/Second)."""
+    benchmark.name = "Python: type('X', (), {})"
+    benchmark(lambda: type('X', (object,), {'value': 100}))
+
+
 # =============================================================================
 # PHYSITIES: Single operations with unit safety
 # =============================================================================
@@ -74,6 +99,18 @@ def test_physities_convert(benchmark):
     benchmark.name = "Physities: convert"
     m = Meter(1000)
     benchmark(lambda: m.convert(Kilometer))
+
+
+def test_physities_create_unit(benchmark):
+    """Create a Unit instance."""
+    benchmark.name = "Physities: Meter(100)"
+    benchmark(lambda: Meter(100))
+
+
+def test_physities_create_type(benchmark):
+    """Create a composite unit type (e.g., Meter/Second)."""
+    benchmark.name = "Physities: Meter / Second"
+    benchmark(lambda: Meter / Second)
 
 
 # =============================================================================

@@ -276,6 +276,9 @@ avg = distances.mean()
     <div id="summary" class="perspective"></div>
     <div id="results-table"></div>
 
+    <h3>Object Creation</h3>
+    <div id="creation-table"></div>
+
     <h2>📉 Performance Trends</h2>
     <div id="charts"></div>
 
@@ -285,7 +288,7 @@ avg = distances.mean()
     <script>
         function isBaseline(name) {
             const n = name.toLowerCase();
-            return n.includes('baseline') || n.includes('python_float') || n.includes('testbaseline') || n.includes('numpy');
+            return n.includes('baseline') || n.includes('python:') || n.includes('testbaseline') || n.includes('numpy');
         }
         function isPhysities(name) {
             const n = name.toLowerCase();
@@ -294,7 +297,15 @@ avg = distances.mean()
         }
         function isCreation(name) {
             const n = name.toLowerCase();
-            return n.includes('create') || n.includes('creation');
+            return n.includes('create') || n.includes('creation') || n.includes('meter(100)') || n.includes('meter / second');
+        }
+        function isBaselineCreation(name) {
+            const n = name.toLowerCase();
+            return isCreation(n) && (n.includes('python') || n.includes('baseline') || n.includes('float') || n.includes('simpleclass') || n.includes('type('));
+        }
+        function isPhysitiesCreation(name) {
+            const n = name.toLowerCase();
+            return isCreation(n) && (n.includes('physities') || n.includes('meter'));
         }
         function isBatch(name) {
             const n = name.toLowerCase();
@@ -371,6 +382,67 @@ avg = distances.mean()
                 document.getElementById('summary').innerHTML =
                     `<strong>Average overhead: ${avg}×</strong> — Each operation takes ~${formatTime(500000)} instead of ~${formatTime(12000000)}. Still 500K ops/sec.`;
             }
+
+            // Render creation benchmarks table
+            renderCreationTable(benches);
+        }
+
+        function renderCreationTable(benches) {
+            const baselineCreation = benches.filter(b => isBaselineCreation(b.name));
+            const physitiesCreation = benches.filter(b => isPhysitiesCreation(b.name));
+
+            let html = `<table>
+                <tr>
+                    <th>Operation</th>
+                    <th>Plain Python</th>
+                    <th>Physities</th>
+                    <th>Overhead</th>
+                </tr>`;
+
+            // Create unit row: compare SimpleClass vs Meter(100)
+            const baseClass = baselineCreation.find(b => b.name.toLowerCase().includes('simpleclass') || b.name.toLowerCase().includes('class(100)'));
+            const physUnit = physitiesCreation.find(b => b.name.toLowerCase().includes('meter(100)') || (b.name.toLowerCase().includes('create') && b.name.toLowerCase().includes('unit')));
+
+            if (baseClass && physUnit) {
+                const overhead = baseClass.value / physUnit.value;
+                html += `<tr>
+                    <td>Create unit</td>
+                    <td class="time faster">${formatTime(baseClass.value)}</td>
+                    <td class="time slower">${formatTime(physUnit.value)}</td>
+                    <td class="overhead">${overhead.toFixed(0)}× slower</td>
+                </tr>`;
+            } else if (physUnit) {
+                html += `<tr>
+                    <td>Create unit</td>
+                    <td class="time">—</td>
+                    <td class="time">${formatTime(physUnit.value)}</td>
+                    <td>—</td>
+                </tr>`;
+            }
+
+            // Create type row: compare type() vs Meter/Second
+            const baseType = baselineCreation.find(b => b.name.toLowerCase().includes("type('") || b.name.toLowerCase().includes('type('));
+            const physType = physitiesCreation.find(b => b.name.toLowerCase().includes('meter / second') || (b.name.toLowerCase().includes('create') && b.name.toLowerCase().includes('type')));
+
+            if (baseType && physType) {
+                const overhead = baseType.value / physType.value;
+                html += `<tr>
+                    <td>Create type</td>
+                    <td class="time faster">${formatTime(baseType.value)}</td>
+                    <td class="time slower">${formatTime(physType.value)}</td>
+                    <td class="overhead">${overhead.toFixed(0)}× slower</td>
+                </tr>`;
+            } else if (physType) {
+                html += `<tr>
+                    <td>Create type</td>
+                    <td class="time">—</td>
+                    <td class="time">${formatTime(physType.value)}</td>
+                    <td>—</td>
+                </tr>`;
+            }
+
+            html += '</table>';
+            document.getElementById('creation-table').innerHTML = html;
         }
 
         function renderCharts(data) {
