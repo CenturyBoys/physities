@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1774576261351,
+  "lastUpdate": 1774576901385,
   "repoUrl": "https://github.com/CenturyBoys/physities",
   "entries": {
     "Physities Benchmarks": [
@@ -1556,6 +1556,149 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 0.00007424663422527274",
             "extra": "mean: 7.6546263242168235 usec\nrounds: 29357"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "im.ximit@gmail.com",
+            "name": "Marco Sievers de Almeida",
+            "username": "XimitGaia"
+          },
+          "committer": {
+            "email": "im.ximit@gmail.com",
+            "name": "Marco Sievers de Almeida",
+            "username": "XimitGaia"
+          },
+          "distinct": true,
+          "id": "b3152651a5379aa5e8b5e9cf52f5b29167dd159c",
+          "message": "feat: add NumPy batch operations via UnitArray\n\n- UnitArray class for vectorized operations on arrays of values\n- All values share same unit type for efficiency\n- Supports: add, sub, mul, div, pow, sum, mean, std, min, max\n- Batch convert() for converting all values at once\n- ~100x faster than loops for 1000+ elements\n\nAlso adds numpy as a dependency and batch benchmarks.\n\nNote: mypyc compilation would conflict with maturin build system.\nThe Rust backend already handles performance-critical code.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>",
+          "timestamp": "2026-03-26T23:00:43-03:00",
+          "tree_id": "c98f2310c72e59449a4b6e2c79aad7ab235d6c4d",
+          "url": "https://github.com/CenturyBoys/physities/commit/b3152651a5379aa5e8b5e9cf52f5b29167dd159c"
+        },
+        "date": 1774576901110,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_add",
+            "value": 10847941.078958722,
+            "unit": "iter/sec",
+            "range": "stddev: 1.7375897574085292e-8",
+            "extra": "mean: 92.1833915506516 nsec\nrounds: 79340"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_multiply",
+            "value": 10992433.667853765,
+            "unit": "iter/sec",
+            "range": "stddev: 9.966061546223853e-9",
+            "extra": "mean: 90.97166562159765 nsec\nrounds: 108614"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_divide",
+            "value": 10446206.72330525,
+            "unit": "iter/sec",
+            "range": "stddev: 1.0061904321218857e-8",
+            "extra": "mean: 95.72852868870775 nsec\nrounds: 110534"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_convert",
+            "value": 10321520.640412029,
+            "unit": "iter/sec",
+            "range": "stddev: 9.911781098194147e-9",
+            "extra": "mean: 96.88494891780029 nsec\nrounds: 103853"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_add",
+            "value": 318409.70106013684,
+            "unit": "iter/sec",
+            "range": "stddev: 6.841555883127812e-7",
+            "extra": "mean: 3.140607829065904 usec\nrounds: 41589"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_multiply",
+            "value": 322726.4315081284,
+            "unit": "iter/sec",
+            "range": "stddev: 6.129602118060761e-7",
+            "extra": "mean: 3.0985996260886157 usec\nrounds: 29947"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_divide",
+            "value": 326658.2417082383,
+            "unit": "iter/sec",
+            "range": "stddev: 7.582047666718828e-7",
+            "extra": "mean: 3.0613034429211523 usec\nrounds: 66543"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_convert",
+            "value": 569986.834117202,
+            "unit": "iter/sec",
+            "range": "stddev: 7.422133216384307e-7",
+            "extra": "mean: 1.7544264887254881 usec\nrounds: 128123"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_numpy_add_1000",
+            "value": 926878.2562902432,
+            "unit": "iter/sec",
+            "range": "stddev: 3.446086825735468e-7",
+            "extra": "mean: 1.0788903431637513 usec\nrounds: 61346"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_numpy_multiply_1000",
+            "value": 920883.9766663961,
+            "unit": "iter/sec",
+            "range": "stddev: 3.231483469958852e-7",
+            "extra": "mean: 1.0859131284051702 usec\nrounds: 105731"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_numpy_sum_1000",
+            "value": 331403.63203872246,
+            "unit": "iter/sec",
+            "range": "stddev: 6.097291270325847e-7",
+            "extra": "mean: 3.0174684382552464 usec\nrounds: 24238"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_unitarray_add_1000",
+            "value": 238307.08884132354,
+            "unit": "iter/sec",
+            "range": "stddev: 7.580615987746601e-7",
+            "extra": "mean: 4.19626627500724 usec\nrounds: 27235"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_unitarray_multiply_1000",
+            "value": 508140.7310490102,
+            "unit": "iter/sec",
+            "range": "stddev: 4.668666274127735e-7",
+            "extra": "mean: 1.9679587541340986 usec\nrounds: 133977"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_unitarray_sum_1000",
+            "value": 289427.08739212825,
+            "unit": "iter/sec",
+            "range": "stddev: 6.751231373864007e-7",
+            "extra": "mean: 3.455101625112086 usec\nrounds: 35572"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_unitarray_convert_1000",
+            "value": 344585.76121638017,
+            "unit": "iter/sec",
+            "range": "stddev: 6.053629254142483e-7",
+            "extra": "mean: 2.9020351754234475 usec\nrounds: 46424"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_loop_add_100",
+            "value": 3453.3550811632717,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000007222364151377228",
+            "extra": "mean: 289.5734659475409 usec\nrounds: 3245"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_batch_add_100",
+            "value": 257413.01308375987,
+            "unit": "iter/sec",
+            "range": "stddev: 6.878602681779269e-7",
+            "extra": "mean: 3.8848074851391017 usec\nrounds: 25250"
           }
         ]
       }
