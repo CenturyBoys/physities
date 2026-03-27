@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1774577226155,
+  "lastUpdate": 1774577681639,
   "repoUrl": "https://github.com/CenturyBoys/physities",
   "entries": {
     "Physities Benchmarks": [
@@ -1842,6 +1842,184 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 8.07748231707223e-7",
             "extra": "mean: 3.8299863042783198 usec\nrounds: 23219"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "im.ximit@gmail.com",
+            "name": "Marco Sievers de Almeida",
+            "username": "XimitGaia"
+          },
+          "committer": {
+            "email": "im.ximit@gmail.com",
+            "name": "Marco Sievers de Almeida",
+            "username": "XimitGaia"
+          },
+          "distinct": true,
+          "id": "ac397e70ae94daa28475a564e4f8affa97e81ede",
+          "message": "feat: add Python baselines for object creation benchmarks\n\nAdd baseline benchmarks for comparing unit/type creation overhead:\n- Python: float(100) - minimal object creation\n- Python: SimpleClass(100) - comparable to Unit creation\n- Python: type('X', (), {}) - comparable to Meter/Second\n\nResults show minimal overhead for unit creation (~1.3x) and reasonable\noverhead for type creation (~2.6x).\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>",
+          "timestamp": "2026-03-26T23:13:34-03:00",
+          "tree_id": "516872f5066b7a482b06627403a3d7cdc164c7d2",
+          "url": "https://github.com/CenturyBoys/physities/commit/ac397e70ae94daa28475a564e4f8affa97e81ede"
+        },
+        "date": 1774577681366,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_add",
+            "value": 11434053.189914549,
+            "unit": "iter/sec",
+            "range": "stddev: 7.630502663944404e-9",
+            "extra": "mean: 87.45805038601442 nsec\nrounds: 82217"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_multiply",
+            "value": 10915562.793103177,
+            "unit": "iter/sec",
+            "range": "stddev: 1.2260795664493797e-8",
+            "extra": "mean: 91.61231710668189 nsec\nrounds: 108027"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_divide",
+            "value": 10934950.191835254,
+            "unit": "iter/sec",
+            "range": "stddev: 1.3655610292221446e-8",
+            "extra": "mean: 91.44989071339637 nsec\nrounds: 108614"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_convert",
+            "value": 10438124.514865741,
+            "unit": "iter/sec",
+            "range": "stddev: 9.5577856589209e-9",
+            "extra": "mean: 95.80265100075539 nsec\nrounds: 103542"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_create_float",
+            "value": 11884020.863021055,
+            "unit": "iter/sec",
+            "range": "stddev: 8.523794992653155e-9",
+            "extra": "mean: 84.14660421133551 nsec\nrounds: 117578"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_create_class",
+            "value": 5300228.279007638,
+            "unit": "iter/sec",
+            "range": "stddev: 2.8864036844190078e-8",
+            "extra": "mean: 188.67111893285497 nsec\nrounds: 199243"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_create_type",
+            "value": 175110.02271544153,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000022433415549220085",
+            "extra": "mean: 5.710695393061691 usec\nrounds: 55698"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_add",
+            "value": 323136.8769550681,
+            "unit": "iter/sec",
+            "range": "stddev: 6.064933034418018e-7",
+            "extra": "mean: 3.094663813746795 usec\nrounds: 44166"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_multiply",
+            "value": 338732.045523146,
+            "unit": "iter/sec",
+            "range": "stddev: 6.257711394807451e-7",
+            "extra": "mean: 2.9521859924872937 usec\nrounds: 28356"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_divide",
+            "value": 335194.05527418613,
+            "unit": "iter/sec",
+            "range": "stddev: 7.854987112038751e-7",
+            "extra": "mean: 2.9833464653244155 usec\nrounds: 62696"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_convert",
+            "value": 583404.824113107,
+            "unit": "iter/sec",
+            "range": "stddev: 4.4501876271888566e-7",
+            "extra": "mean: 1.7140756446781211 usec\nrounds: 63296"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_create_unit",
+            "value": 4942366.2190589495,
+            "unit": "iter/sec",
+            "range": "stddev: 3.4491371858360805e-8",
+            "extra": "mean: 202.3322343341843 nsec\nrounds: 198060"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_create_type",
+            "value": 139136.83137064983,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000017836512576828313",
+            "extra": "mean: 7.187169566454169 usec\nrounds: 30118"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_numpy_add_1000",
+            "value": 934688.8461738541,
+            "unit": "iter/sec",
+            "range": "stddev: 3.628724535825802e-7",
+            "extra": "mean: 1.069874754677449 usec\nrounds: 76953"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_numpy_multiply_1000",
+            "value": 931638.0825786336,
+            "unit": "iter/sec",
+            "range": "stddev: 3.230272939141928e-7",
+            "extra": "mean: 1.073378191273752 usec\nrounds: 95338"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_numpy_sum_1000",
+            "value": 320189.1771942392,
+            "unit": "iter/sec",
+            "range": "stddev: 6.9744467152895e-7",
+            "extra": "mean: 3.1231536579806414 usec\nrounds: 25726"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_unitarray_add_1000",
+            "value": 234597.87070782125,
+            "unit": "iter/sec",
+            "range": "stddev: 7.927024246343211e-7",
+            "extra": "mean: 4.262613283670613 usec\nrounds: 33756"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_unitarray_multiply_1000",
+            "value": 504466.29252857325,
+            "unit": "iter/sec",
+            "range": "stddev: 4.327025319334866e-7",
+            "extra": "mean: 1.9822929991766685 usec\nrounds: 131683"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_unitarray_sum_1000",
+            "value": 280765.134841342,
+            "unit": "iter/sec",
+            "range": "stddev: 6.909577483769615e-7",
+            "extra": "mean: 3.5616957944763747 usec\nrounds: 34171"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_unitarray_convert_1000",
+            "value": 346554.36458843277,
+            "unit": "iter/sec",
+            "range": "stddev: 5.76426980666766e-7",
+            "extra": "mean: 2.8855501536897328 usec\nrounds: 44264"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_loop_add_100",
+            "value": 3543.798325137302,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000006104032842373664",
+            "extra": "mean: 282.183100800821 usec\nrounds: 3244"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_batch_add_100",
+            "value": 261106.86567653072,
+            "unit": "iter/sec",
+            "range": "stddev: 7.314190828618903e-7",
+            "extra": "mean: 3.8298495039913605 usec\nrounds: 24798"
           }
         ]
       }
