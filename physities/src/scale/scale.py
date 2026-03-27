@@ -1,85 +1,16 @@
-from dataclasses import dataclass
+import json
 from math import prod
-from typing import Optional
-
-from kobject import Kobject
+from typing import Self
 
 from physities.src.dimension import Dimension
 from physities.src.dimension.base_dimensions import BaseDimension
 from physities.src.exceptions import InvalidOperationError, InvalidPowerError
 
-# Try to import the Rust backend for high-performance operations
-try:
-    from physities._physities_core import PhysicalScale as RustPhysicalScale
-    _HAS_RUST = True
-except ImportError:
-    _HAS_RUST = False
-    RustPhysicalScale = None
-
-# Enable Rust for Scale operations by default.
-# Benchmarks show ~20% speedup for typical operations when accounting
-# for full Python object creation overhead (frozen dataclasses, Kobject, etc.)
-# Disable via Scale.disable_rust() if needed.
-_USE_RUST_FOR_OPS = True
+# Import the Rust backend
+from physities._physities_core import PhysicalScale as _RustScale
 
 
-def _rust_to_scale(rust_scale: "RustPhysicalScale") -> "Scale":
-    """Convert a Rust PhysicalScale to a Python Scale.
-
-    Args:
-        rust_scale: The Rust PhysicalScale instance.
-
-    Returns:
-        A Python Scale with the same data.
-    """
-    # Extract dimension exponents from Rust (indices 0-6)
-    dim_tuple = (
-        rust_scale.length,
-        rust_scale.mass,
-        rust_scale.temperature,
-        rust_scale.time,
-        rust_scale.amount,
-        rust_scale.electric_current,
-        rust_scale.luminous_intensity,
-    )
-
-    # Extract conversion factors (indices 7-13)
-    conv_tuple = tuple(rust_scale.get_conversion(i) for i in range(7))
-
-    # Create Dimension from exponents
-    dimension = Dimension.new_instance(dim_tuple)
-
-    return Scale(
-        dimension=dimension,
-        from_base_scale_conversions=conv_tuple,
-        rescale_value=rust_scale.rescale_value,
-    )
-
-
-def _scale_to_rust(scale: "Scale") -> "RustPhysicalScale":
-    """Convert a Python Scale to a Rust PhysicalScale.
-
-    Args:
-        scale: The Python Scale instance.
-
-    Returns:
-        A Rust PhysicalScale with the same data.
-    """
-    if not _HAS_RUST:
-        raise RuntimeError("Rust backend not available")
-
-    # Get dimension exponents
-    dim_tuple = scale.dimension.dimensions_tuple
-
-    return RustPhysicalScale.from_components(
-        dim_tuple,
-        scale.from_base_scale_conversions,
-        float(scale.rescale_value),
-    )
-
-
-@dataclass(frozen=True, slots=True)
-class Scale(Kobject):
+class Scale:
     """Represents a unit scale with dimension and conversion factors.
 
     A Scale combines a Dimension with conversion factors that define how to
@@ -87,6 +18,8 @@ class Scale(Kobject):
     that properly combine scales when multiplying/dividing units.
 
     The total conversion factor is: rescale_value * product(from_base_scale_conversions)
+
+    This class is a thin wrapper around the Rust PhysicalScale for high performance.
 
     Attributes:
         dimension: The physical Dimension of this scale.
@@ -117,17 +50,57 @@ class Scale(Kobject):
         >>> ms_scale = meter_scale / second_scale
     """
 
-    dimension: Dimension
-    from_base_scale_conversions: tuple[
-        float | int,
-        float | int,
-        float | int,
-        float | int,
-        float | int,
-        float | int,
-        float | int,
-    ]
-    rescale_value: float | int
+    __slots__ = ('_rust',)
+
+    def __init__(
+        self,
+        *,
+        dimension: Dimension,
+        from_base_scale_conversions: tuple[
+            float | int,
+            float | int,
+            float | int,
+            float | int,
+            float | int,
+            float | int,
+            float | int,
+        ],
+        rescale_value: float | int,
+    ):
+        """Create a new Scale.
+
+        Args:
+            dimension: The physical Dimension of this scale.
+            from_base_scale_conversions: A 7-element tuple of conversion factors.
+            rescale_value: An additional multiplicative factor.
+        """
+        self._rust = _RustScale.from_dimension(
+            dimension._rust,
+            from_base_scale_conversions,
+            float(rescale_value),
+        )
+
+    @classmethod
+    def _from_rust(cls, rust_scale: _RustScale) -> Self:
+        """Create a Scale from a Rust PhysicalScale (internal use)."""
+        instance = object.__new__(cls)
+        instance._rust = rust_scale
+        return instance
+
+    @property
+    def dimension(self) -> Dimension:
+        """The physical Dimension of this scale."""
+        return Dimension._from_rust(self._rust.dimension)
+
+    @property
+    def from_base_scale_conversions(self) -> tuple[float, float, float, float, float, float, float]:
+        """The 7-element tuple of conversion factors."""
+        return tuple(self._rust.from_base_scale_conversions())
+
+    @property
+    def rescale_value(self) -> float:
+        """The additional multiplicative scaling factor."""
+        return self._rust.rescale_value
 
     @classmethod
     def new(
@@ -137,7 +110,7 @@ class Scale(Kobject):
             float, float, float, float, float, float, float
         ] = None,
         rescale_value: float = None,
-    ):
+    ) -> Self:
         """Create a new Scale with default SI values.
 
         Args:
@@ -179,79 +152,7 @@ class Scale(Kobject):
         Returns:
             True if all dimension exponents are zero, False otherwise.
         """
-        if not self.dimension.get_dimensions():
-            return True
-        return False
-
-    def to_rust(self) -> Optional["RustPhysicalScale"]:
-        """Convert this Scale to a Rust PhysicalScale for high-performance operations.
-
-        Returns:
-            A RustPhysicalScale if the Rust backend is available, None otherwise.
-
-        Example:
-            >>> scale = Scale.new(dimension=Dimension.new_length())
-            >>> rust_scale = scale.to_rust()
-            >>> if rust_scale:
-            ...     print(rust_scale.conversion_factor)
-        """
-        if _HAS_RUST:
-            return _scale_to_rust(self)
-        return None
-
-    @staticmethod
-    def from_rust(rust_scale: "RustPhysicalScale") -> "Scale":
-        """Create a Scale from a Rust PhysicalScale.
-
-        Args:
-            rust_scale: The Rust PhysicalScale instance.
-
-        Returns:
-            A Python Scale with the same data.
-        """
-        return _rust_to_scale(rust_scale)
-
-    @staticmethod
-    def has_rust_backend() -> bool:
-        """Check if the Rust backend is available.
-
-        Returns:
-            True if the Rust PhysicalScale is available for high-performance operations.
-        """
-        return _HAS_RUST
-
-    @staticmethod
-    def is_rust_enabled() -> bool:
-        """Check if Rust is enabled for Scale operations.
-
-        Returns:
-            True if Rust is being used for operations.
-        """
-        return _HAS_RUST and _USE_RUST_FOR_OPS
-
-    @staticmethod
-    def enable_rust():
-        """Enable Rust for Scale operations.
-
-        Rust is faster for:
-        - Batch processing with PhysicalScale directly
-        - NumPy array interop
-        - Serialization (JSON, int64 encoding)
-
-        For single operations, pure Python is faster due to conversion overhead.
-        """
-        global _USE_RUST_FOR_OPS
-        if _HAS_RUST:
-            _USE_RUST_FOR_OPS = True
-
-    @staticmethod
-    def disable_rust():
-        """Disable Rust for Scale operations (default).
-
-        Pure Python is faster for single operations due to conversion overhead.
-        """
-        global _USE_RUST_FOR_OPS
-        _USE_RUST_FOR_OPS = False
+        return self._rust.is_dimensionless
 
     @property
     def conversion_factor(self) -> float:
@@ -268,99 +169,159 @@ class Scale(Kobject):
             >>> km.conversion_factor
             1000.0
         """
-        return self.rescale_value * prod(self.from_base_scale_conversions)
+        return self._rust.conversion_factor
+
+    def to_rust(self) -> _RustScale:
+        """Get the underlying Rust PhysicalScale.
+
+        Returns:
+            The Rust PhysicalScale backing this Scale.
+        """
+        return self._rust
+
+    @classmethod
+    def from_rust(cls, rust_scale: _RustScale) -> Self:
+        """Create a Scale from a Rust PhysicalScale.
+
+        Args:
+            rust_scale: The Rust PhysicalScale instance.
+
+        Returns:
+            A Python Scale wrapping the Rust scale.
+        """
+        return cls._from_rust(rust_scale)
 
     @staticmethod
-    def __get_annulled_dimension(
-        dimension_1: Dimension, dimension_2: Dimension, result_dimension: Dimension
-    ) -> list[
-        BaseDimension,
-        BaseDimension,
-        BaseDimension,
-        BaseDimension,
-        BaseDimension,
-        BaseDimension,
-        BaseDimension,
-    ]:
-        set_1 = set(dimension_1.get_dimensions())
-        set_2 = set(dimension_2.get_dimensions())
-        set_3 = set(result_dimension.get_dimensions())
-        return list((set_1 - set_3).union(set_2 - set_3))
+    def has_rust_backend() -> bool:
+        """Check if the Rust backend is available.
+
+        Returns:
+            True - Rust backend is always available in this version.
+        """
+        return True
 
     @staticmethod
-    def __fit_scale_and_dimension(
-        dimension_instance: Dimension,
-        from_base_scale_conversions: tuple[
-            float, float, float, float, float, float, float
-        ],
-        value: float,
-        rescale_value: float,
-    ):
-        dimension = dimension_instance.get_dimensions()
-        if len(dimension) == 1:
-            index = dimension.pop()
-            from_base_scale_conversions_list = list(from_base_scale_conversions)
-            from_base_scale_conversions_list[index] *= rescale_value
-            new_from_base_scale_conversions = tuple(from_base_scale_conversions_list)
-            return 1, new_from_base_scale_conversions
-        return rescale_value * value, from_base_scale_conversions
+    def is_rust_enabled() -> bool:
+        """Check if Rust is enabled for Scale operations.
+
+        Returns:
+            True - Rust is always enabled in this version.
+        """
+        return True
+
+    @staticmethod
+    def enable_rust():
+        """Enable Rust for Scale operations.
+
+        No-op in this version - Rust is always enabled.
+        """
+        pass
+
+    @staticmethod
+    def disable_rust():
+        """Disable Rust for Scale operations.
+
+        No-op in this version - Rust is always enabled.
+        """
+        pass
+
+    # ==================== Serialization ====================
+
+    def dict(self) -> dict:
+        """Serialize the Scale to a dictionary.
+
+        Returns:
+            A dictionary with 'dimension', 'from_base_scale_conversions', and 'rescale_value'.
+
+        Example:
+            >>> scale = Scale.new(dimension=Dimension.new_length())
+            >>> scale.dict()
+            {'dimension': (1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+             'from_base_scale_conversions': (1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0),
+             'rescale_value': 1.0}
+        """
+        return {
+            'dimension': self.dimension.dimensions_tuple,
+            'from_base_scale_conversions': self.from_base_scale_conversions,
+            'rescale_value': self.rescale_value,
+        }
+
+    def to_json(self) -> str:
+        """Serialize the Scale to a JSON string.
+
+        Returns:
+            A JSON string representation of the Scale.
+
+        Example:
+            >>> scale = Scale.new(dimension=Dimension.new_length())
+            >>> scale.to_json()
+            '{"dimension": [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], ...}'
+        """
+        data = {
+            'dimension': list(self.dimension.dimensions_tuple),
+            'from_base_scale_conversions': list(self.from_base_scale_conversions),
+            'rescale_value': self.rescale_value,
+        }
+        return json.dumps(data)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> Self:
+        """Create a Scale from a dictionary.
+
+        Args:
+            data: A dictionary with 'dimension', 'from_base_scale_conversions',
+                  and 'rescale_value' keys.
+
+        Returns:
+            A new Scale instance.
+
+        Example:
+            >>> data = {'dimension': (1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+            ...         'from_base_scale_conversions': (1000, 1, 1, 1, 1, 1, 1),
+            ...         'rescale_value': 1.0}
+            >>> scale = Scale.from_dict(data)
+        """
+        dimension = Dimension.new_instance(tuple(data['dimension']))
+        return cls(
+            dimension=dimension,
+            from_base_scale_conversions=tuple(data['from_base_scale_conversions']),
+            rescale_value=data['rescale_value'],
+        )
+
+    @classmethod
+    def from_json(cls, json_str: str) -> Self:
+        """Create a Scale from a JSON string.
+
+        Args:
+            json_str: A JSON string representation of the Scale.
+
+        Returns:
+            A new Scale instance.
+
+        Example:
+            >>> json_str = '{"dimension": [1, 0, 0, 0, 0, 0, 0], ...}'
+            >>> scale = Scale.from_json(json_str)
+        """
+        data = json.loads(json_str)
+        return cls.from_dict(data)
+
+    # ==================== Arithmetic Operations ====================
 
     def __eq__(self, other):
         if isinstance(other, Scale):
-            if self.dimension == other.dimension and self.conversion_factor == other.conversion_factor:
-                return True
+            return self._rust.equals(other._rust)
         return False
 
-    def __mul__(self, other):
-        # Use Rust backend when enabled (disabled by default for single ops)
-        if _HAS_RUST and _USE_RUST_FOR_OPS:
-            if isinstance(other, (int, float)):
-                rust_result = _scale_to_rust(self).multiply_scalar(float(other))
-                return _rust_to_scale(rust_result)
-            if isinstance(other, Scale):
-                rust_result = _scale_to_rust(self).multiply(_scale_to_rust(other))
-                return _rust_to_scale(rust_result)
+    def __hash__(self):
+        return hash(self._rust)
 
-        # Fallback to pure Python implementation
+    def __mul__(self, other):
         if isinstance(other, (int, float)):
-            new_value, new_from_base_scale_conversions = self.__fit_scale_and_dimension(
-                dimension_instance=self.dimension,
-                from_base_scale_conversions=self.from_base_scale_conversions,
-                rescale_value=other,
-                value=self.rescale_value,
-            )
-            return Scale(
-                dimension=self.dimension,
-                from_base_scale_conversions=new_from_base_scale_conversions,
-                rescale_value=new_value,
-            )
+            rust_result = self._rust.multiply_scalar(float(other))
+            return Scale._from_rust(rust_result)
         if isinstance(other, Scale):
-            new_dimension = self.dimension + other.dimension
-            new_from_base_scale_conversions_list = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-            rescale_factor = 1
-            for i in BaseDimension:
-                xxx = (
-                    self.from_base_scale_conversions[i]
-                    * other.from_base_scale_conversions[i]
-                )
-                if new_dimension.get(i) == 0 and (
-                    self.dimension.get(i) != 0 or other.dimension.get(i) != 0
-                ):
-                    rescale_factor *= xxx
-                    new_from_base_scale_conversions_list[i] = 1
-                else:
-                    new_from_base_scale_conversions_list[i] = xxx
-            new_value, new_from_base_scale_conversions = self.__fit_scale_and_dimension(
-                dimension_instance=new_dimension,
-                from_base_scale_conversions=tuple(new_from_base_scale_conversions_list),
-                rescale_value=self.rescale_value,
-                value=rescale_factor,
-            )
-            return Scale(
-                dimension=new_dimension,
-                from_base_scale_conversions=new_from_base_scale_conversions,
-                rescale_value=new_value,
-            )
+            rust_result = self._rust.multiply(other._rust)
+            return Scale._from_rust(rust_result)
         raise InvalidOperationError(
             "multiplication on Scale",
             type(other),
@@ -368,62 +329,15 @@ class Scale(Kobject):
         )
 
     def __rmul__(self, other):
-        try:
-            to_return = Scale.__mul__(self, other)
-        except TypeError as e:
-            raise e
-        return to_return
+        return self.__mul__(other)
 
     def __truediv__(self, other):
-        # Use Rust backend when enabled (disabled by default for single ops)
-        if _HAS_RUST and _USE_RUST_FOR_OPS:
-            if isinstance(other, (int, float)):
-                rust_result = _scale_to_rust(self).divide_scalar(float(other))
-                return _rust_to_scale(rust_result)
-            if isinstance(other, Scale):
-                rust_result = _scale_to_rust(self).divide(_scale_to_rust(other))
-                return _rust_to_scale(rust_result)
-
-        # Fallback to pure Python implementation
         if isinstance(other, (int, float)):
-            new_value, new_from_base_scale_conversions = self.__fit_scale_and_dimension(
-                dimension_instance=self.dimension,
-                from_base_scale_conversions=self.from_base_scale_conversions,
-                rescale_value=1 / other,
-                value=self.rescale_value,
-            )
-            return Scale(
-                dimension=self.dimension,
-                from_base_scale_conversions=new_from_base_scale_conversions,
-                rescale_value=new_value,
-            )
+            rust_result = self._rust.divide_scalar(float(other))
+            return Scale._from_rust(rust_result)
         if isinstance(other, Scale):
-            new_dimension = self.dimension - other.dimension
-            new_from_base_scale_conversions_list = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-            rescale_factor = 1
-            for i in BaseDimension:
-                xxx = (
-                    self.from_base_scale_conversions[i]
-                    / other.from_base_scale_conversions[i]
-                )
-                if new_dimension.get(i) == 0 and (
-                    self.dimension.get(i) != 0 or other.dimension.get(i) != 0
-                ):
-                    rescale_factor *= xxx
-                    new_from_base_scale_conversions_list[i] = 1
-                else:
-                    new_from_base_scale_conversions_list[i] = xxx
-            new_value, new_from_base_scale_conversions = self.__fit_scale_and_dimension(
-                dimension_instance=new_dimension,
-                from_base_scale_conversions=tuple(new_from_base_scale_conversions_list),
-                rescale_value=self.rescale_value,
-                value=rescale_factor,
-            )
-            return Scale(
-                dimension=new_dimension,
-                from_base_scale_conversions=new_from_base_scale_conversions,
-                rescale_value=new_value,
-            )
+            rust_result = self._rust.divide(other._rust)
+            return Scale._from_rust(rust_result)
         raise InvalidOperationError(
             "division on Scale",
             type(other),
@@ -431,29 +345,9 @@ class Scale(Kobject):
         )
 
     def __rtruediv__(self, other):
-        # Use Rust backend when enabled (disabled by default for single ops)
-        if _HAS_RUST and _USE_RUST_FOR_OPS and isinstance(other, (int, float)):
-            rust_result = _scale_to_rust(self).rdivide_scalar(float(other))
-            return _rust_to_scale(rust_result)
-
-        # Fallback to pure Python implementation
         if isinstance(other, (int, float)):
-            new_dimension = self.dimension * -1
-            new_rescale_value = 1 / self.rescale_value
-            new_from_base_scale_conversions_list = [
-                1 / self.from_base_scale_conversions[i] for i in BaseDimension
-            ]
-            new_value, new_from_base_scale_conversions = self.__fit_scale_and_dimension(
-                dimension_instance=new_dimension,
-                from_base_scale_conversions=tuple(new_from_base_scale_conversions_list),
-                rescale_value=new_rescale_value,
-                value=other,
-            )
-            return Scale(
-                dimension=new_dimension,
-                from_base_scale_conversions=new_from_base_scale_conversions,
-                rescale_value=new_value,
-            )
+            rust_result = self._rust.rdivide_scalar(float(other))
+            return Scale._from_rust(rust_result)
         raise InvalidOperationError(
             "reverse division on Scale",
             type(other),
@@ -461,21 +355,13 @@ class Scale(Kobject):
         )
 
     def __pow__(self, power, modulo=None):
-        # Use Rust backend when enabled (disabled by default for single ops)
-        if _HAS_RUST and _USE_RUST_FOR_OPS and isinstance(power, (int, float)):
-            rust_result = _scale_to_rust(self).power(float(power))
-            return _rust_to_scale(rust_result)
-
-        # Fallback to pure Python implementation
         if isinstance(power, (int, float)):
-            new_dimension = self.dimension * power
-            new_from_base_scale_conversions = tuple(
-                i**power for i in self.from_base_scale_conversions
-            )
-            new_rescale_value = self.rescale_value**power
-            return Scale(
-                dimension=new_dimension,
-                from_base_scale_conversions=new_from_base_scale_conversions,
-                rescale_value=new_rescale_value,
-            )
+            rust_result = self._rust.power(float(power))
+            return Scale._from_rust(rust_result)
         raise InvalidPowerError("Scale", power)
+
+    def __repr__(self):
+        return f"Scale(dimension={self.dimension!r}, from_base_scale_conversions={self.from_base_scale_conversions}, rescale_value={self.rescale_value})"
+
+    def __str__(self):
+        return f"Scale({self.dimension.show_dimension()}, factor={self.conversion_factor})"

@@ -1,54 +1,10 @@
-from dataclasses import dataclass
-from typing import Optional, Self
+from typing import Self
 
 from physities.src.dimension.base_dimensions import BaseDimension
 from physities.src.exceptions import InvalidDimensionError, InvalidOperationError, InvalidPowerError
 
-# Try to import the Rust backend for high-performance operations
-try:
-    from physities._physities_core import PhysicalScale as RustPhysicalScale
-    _HAS_RUST = True
-except ImportError:
-    _HAS_RUST = False
-    RustPhysicalScale = None
-
-# Enable Rust for Dimension operations by default.
-# Benchmarks show ~40% speedup when accounting for full Python
-# object creation overhead (frozen dataclasses).
-# Disable via Dimension.disable_rust() if needed.
-_USE_RUST_FOR_OPS = True
-
-
-def _dimension_to_rust(dim: "Dimension") -> "RustPhysicalScale":
-    """Convert a Python Dimension to a Rust PhysicalScale.
-
-    Only the dimension exponents are set; conversion factors default to 1.0.
-    """
-    if not _HAS_RUST:
-        raise RuntimeError("Rust backend not available")
-
-    return RustPhysicalScale.from_components(
-        dim.dimensions_tuple,
-        (1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0),  # default conversions
-        1.0,  # default rescale
-    )
-
-
-def _rust_to_dimension(rust_scale: "RustPhysicalScale") -> "Dimension":
-    """Convert a Rust PhysicalScale to a Python Dimension.
-
-    Only extracts dimension exponents, ignores conversion factors.
-    """
-    dim_tuple = (
-        rust_scale.length,
-        rust_scale.mass,
-        rust_scale.temperature,
-        rust_scale.time,
-        rust_scale.amount,
-        rust_scale.electric_current,
-        rust_scale.luminous_intensity,
-    )
-    return Dimension(dimensions_tuple=dim_tuple)
+# Import the Rust backend
+from physities._physities_core import PhysicalDimension as _RustDimension
 
 SYMBOLS = {
     BaseDimension.LENGTH: "L",
@@ -57,33 +13,34 @@ SYMBOLS = {
     BaseDimension.TEMPERATURE: "T",
     BaseDimension.AMOUNT: "N",
     BaseDimension.ELECTRIC_CURRENT: "I",
-    BaseDimension.LUMINOUS_INTENSITY: "Iᵥ",
+    BaseDimension.LUMINOUS_INTENSITY: "I\u1d65",  # Iᵥ - subscript v
 }
 
 NUMBER_STR_TO_POWER_STR = {
-    "0": "⁰",
-    "1": "¹",
-    "2": "²",
-    "3": "³",
-    "4": "⁴",
-    "5": "⁵",
-    "6": "⁶",
-    "7": "⁷",
-    "8": "⁸",
-    "9": "⁹",
-    ".": "ˑ",
+    "0": "\u2070",
+    "1": "\u00b9",
+    "2": "\u00b2",
+    "3": "\u00b3",
+    "4": "\u2074",
+    "5": "\u2075",
+    "6": "\u2076",
+    "7": "\u2077",
+    "8": "\u2078",
+    "9": "\u2079",
+    ".": "\u02d1",
 }
 
 
-@dataclass(frozen=True, slots=True)
 class Dimension:
     """Represents physical dimensions using the 7 SI base dimensions.
 
     A Dimension object stores exponents for each of the 7 SI base dimensions:
     LENGTH, MASS, TEMPERATURE, TIME, AMOUNT, ELECTRIC_CURRENT, and LUMINOUS_INTENSITY.
 
-    Dimensions are immutable (frozen dataclass) and support arithmetic operations
+    Dimensions are immutable and support arithmetic operations
     that combine dimensions algebraically (e.g., velocity = length / time).
+
+    This class is a thin wrapper around the Rust PhysicalDimension for high performance.
 
     Attributes:
         dimensions_tuple: A 7-element tuple of floats representing the exponent
@@ -108,50 +65,63 @@ class Dimension:
         []
     """
 
-    dimensions_tuple: tuple[
-        float,
-        float,
-        float,
-        float,
-        float,
-        float,
-        float,
-    ]
+    __slots__ = ('_rust',)
+
+    def __init__(self, *, dimensions_tuple: tuple[float, float, float, float, float, float, float]):
+        """Create a new Dimension from a tuple of exponents.
+
+        Args:
+            dimensions_tuple: A 7-element tuple of exponents in order:
+                (LENGTH, MASS, TEMPERATURE, TIME, AMOUNT, ELECTRIC_CURRENT, LUMINOUS_INTENSITY)
+        """
+        self._rust = _RustDimension(dimensions_tuple)
+
+    @classmethod
+    def _from_rust(cls, rust_dim: _RustDimension) -> Self:
+        """Create a Dimension from a Rust PhysicalDimension (internal use)."""
+        instance = object.__new__(cls)
+        instance._rust = rust_dim
+        return instance
+
+    @property
+    def dimensions_tuple(self) -> tuple[float, float, float, float, float, float, float]:
+        """The 7-element tuple of dimension exponents."""
+        return tuple(self._rust.dimensions_tuple)
 
     @property
     def length(self) -> float:
         """The length dimension exponent (L)."""
-        return self.dimensions_tuple[BaseDimension.LENGTH]
+        return self._rust.length
 
     @property
     def mass(self) -> float:
         """The mass dimension exponent (M)."""
-        return self.dimensions_tuple[BaseDimension.MASS]
+        return self._rust.mass
 
     @property
     def temperature(self) -> float:
-        """The temperature dimension exponent (Θ)."""
-        return self.dimensions_tuple[BaseDimension.TEMPERATURE]
+        """The temperature dimension exponent (Theta)."""
+        return self._rust.temperature
 
     @property
     def time(self) -> float:
         """The time dimension exponent (T)."""
-        return self.dimensions_tuple[BaseDimension.TIME]
+        return self._rust.time
 
     @property
     def amount(self) -> float:
         """The amount of substance dimension exponent (N)."""
-        return self.dimensions_tuple[BaseDimension.AMOUNT]
+        return self._rust.amount
 
     @property
     def electric_current(self) -> float:
         """The electric current dimension exponent (I)."""
-        return self.dimensions_tuple[BaseDimension.ELECTRIC_CURRENT]
+        return self._rust.electric_current
 
     @property
     def luminous_intensity(self) -> float:
         """The luminous intensity dimension exponent (J)."""
-        return self.dimensions_tuple[BaseDimension.LUMINOUS_INTENSITY]
+        return self._rust.luminous_intensity
 
     @classmethod
     def new_time(cls, power: float = None) -> Self:
@@ -264,7 +234,7 @@ class Dimension:
             >>> dimensionless.get_dimensions()
             []
         """
-        return Dimension(dimensions_tuple=(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
+        return cls._from_rust(_RustDimension.new_dimensionless())
 
     @classmethod
     def __new_base_unit(cls, base_unit: BaseDimension, power: float = None):
@@ -294,7 +264,7 @@ class Dimension:
             >>> # Velocity dimension (L^1 * T^-1)
             >>> velocity = Dimension.new_instance((1, 0, 0, -1, 0, 0, 0))
         """
-        return Dimension(dimensions_tuple=dimensions_tuple)
+        return cls(dimensions_tuple=dimensions_tuple)
 
     def get_dimensions(self) -> list[BaseDimension]:
         """Get the list of non-zero base dimensions.
@@ -307,11 +277,7 @@ class Dimension:
             >>> velocity.get_dimensions()
             [<BaseDimension.LENGTH: 0>, <BaseDimension.TIME: 3>]
         """
-        return [
-            BaseDimension(i)
-            for i in range(len(self.dimensions_tuple))
-            if self.dimensions_tuple[i] != 0
-        ]
+        return [BaseDimension(i) for i in self._rust.get_dimensions()]
 
     def get(self, index: BaseDimension) -> float:
         """Get the exponent for a specific base dimension.
@@ -327,165 +293,94 @@ class Dimension:
             >>> velocity.get(BaseDimension.LENGTH)
             1
         """
-        return self.dimensions_tuple[index]
-
-    def to_rust(self) -> Optional["RustPhysicalScale"]:
-        """Convert this Dimension to a Rust PhysicalScale.
-
-        Returns:
-            A RustPhysicalScale if Rust backend is available, None otherwise.
-        """
-        if _HAS_RUST:
-            return _dimension_to_rust(self)
-        return None
-
-    @staticmethod
-    def from_rust(rust_scale: "RustPhysicalScale") -> "Dimension":
-        """Create a Dimension from a Rust PhysicalScale.
-
-        Args:
-            rust_scale: The Rust PhysicalScale instance.
-
-        Returns:
-            A Python Dimension with the dimension exponents.
-        """
-        return _rust_to_dimension(rust_scale)
+        return self._rust.get(int(index))
 
     @staticmethod
     def has_rust_backend() -> bool:
         """Check if the Rust backend is available.
 
         Returns:
-            True if Rust acceleration is available.
+            True - Rust backend is always available in this version.
         """
-        return _HAS_RUST
+        return True
 
     @staticmethod
     def is_rust_enabled() -> bool:
         """Check if Rust is enabled for Dimension operations.
 
         Returns:
-            True if Rust is being used for operations.
+            True - Rust is always enabled in this version.
         """
-        return _HAS_RUST and _USE_RUST_FOR_OPS
+        return True
 
     @staticmethod
     def enable_rust():
         """Enable Rust for Dimension operations.
 
-        Use this for batch processing where conversion overhead is amortized.
-        For single operations, pure Python is faster due to conversion overhead.
+        No-op in this version - Rust is always enabled.
         """
-        global _USE_RUST_FOR_OPS
-        if _HAS_RUST:
-            _USE_RUST_FOR_OPS = True
+        pass
 
     @staticmethod
     def disable_rust():
-        """Disable Rust for Dimension operations (default).
+        """Disable Rust for Dimension operations.
 
-        Pure Python is faster for single operations due to conversion overhead.
+        No-op in this version - Rust is always enabled.
         """
-        global _USE_RUST_FOR_OPS
-        _USE_RUST_FOR_OPS = False
+        pass
 
     def __add__(self, other):
         if isinstance(other, Dimension):
-            # Use Rust backend when enabled (disabled by default for performance)
-            if _HAS_RUST and _USE_RUST_FOR_OPS:
-                rust_result = _dimension_to_rust(self).add_dimensions(_dimension_to_rust(other))
-                return _rust_to_dimension(rust_result)
-
-            # Fallback to Python
-            dimensions_tuple = tuple(
-                sum(i) for i in zip(self.dimensions_tuple, other.dimensions_tuple)
-            )
-            return Dimension(dimensions_tuple=dimensions_tuple)
+            return Dimension._from_rust(self._rust + other._rust)
         else:
             raise InvalidOperationError("addition on Dimension", type(other), (Dimension,))
 
     def __radd__(self, other):
-        try:
-            to_return = self.__add__(other)
-        except TypeError as e:
-            raise e
-        return to_return
+        return self.__add__(other)
 
     def __sub__(self, other):
         if isinstance(other, Dimension):
-            # Use Rust backend when enabled (disabled by default for performance)
-            if _HAS_RUST and _USE_RUST_FOR_OPS:
-                rust_result = _dimension_to_rust(self).subtract_dimensions(_dimension_to_rust(other))
-                return _rust_to_dimension(rust_result)
-
-            # Fallback to Python
-            negative_other_dimensions_tuple = tuple(-i for i in other.dimensions_tuple)
-            dimensions_tuple = tuple(
-                sum(i)
-                for i in zip(self.dimensions_tuple, negative_other_dimensions_tuple)
-            )
-            return Dimension(dimensions_tuple=dimensions_tuple)
+            return Dimension._from_rust(self._rust - other._rust)
         else:
             raise InvalidOperationError("subtraction on Dimension", type(other), (Dimension,))
 
     def __rsub__(self, other):
-        try:
-            to_return = self.__sub__(other)
-        except TypeError as e:
-            raise e
-        return to_return
+        return self.__sub__(other)
 
     def __mul__(self, other):
         if isinstance(other, (int, float)):
-            # Use Rust backend when enabled (disabled by default for performance)
-            if _HAS_RUST and _USE_RUST_FOR_OPS:
-                rust_result = _dimension_to_rust(self).multiply_dimensions(float(other))
-                return _rust_to_dimension(rust_result)
-
-            # Fallback to Python
-            dimensions_tuple = tuple(other * i for i in self.dimensions_tuple)
-            return Dimension(dimensions_tuple=dimensions_tuple)
+            return Dimension._from_rust(self._rust * float(other))
         else:
             raise InvalidOperationError("multiplication on Dimension", type(other), (int, float))
 
     def __rmul__(self, other):
         if isinstance(other, (int, float)):
-            # Use Rust backend when enabled (disabled by default for performance)
-            if _HAS_RUST and _USE_RUST_FOR_OPS:
-                rust_result = _dimension_to_rust(self).multiply_dimensions(float(other))
-                return _rust_to_dimension(rust_result)
-
-            # Fallback to Python
-            dimensions_tuple = tuple(other * i for i in self.dimensions_tuple)
-            return Dimension(dimensions_tuple=dimensions_tuple)
+            return Dimension._from_rust(self._rust * float(other))
         else:
             raise InvalidOperationError("multiplication on Dimension", type(other), (int, float))
 
     def __truediv__(self, other):
         if isinstance(other, (int, float)):
-            # Use Rust backend when enabled (disabled by default for performance)
-            if _HAS_RUST and _USE_RUST_FOR_OPS:
-                rust_result = _dimension_to_rust(self).divide_dimensions(float(other))
-                return _rust_to_dimension(rust_result)
-
-            # Fallback to Python
-            dimensions_tuple = tuple(i / other for i in self.dimensions_tuple)
-            return Dimension(dimensions_tuple=dimensions_tuple)
+            return Dimension._from_rust(self._rust / float(other))
         else:
             raise InvalidOperationError("division on Dimension", type(other), (int, float))
 
     def __rtruediv__(self, other):
         if isinstance(other, (int, float)):
-            dimensions_tuple = tuple(other / i for i in self.dimensions_tuple)
+            # scalar / dimension - returns dimension with each element as scalar / element
+            # This matches the original behavior
+            dimensions_tuple = tuple(other / i if i != 0 else 0.0 for i in self.dimensions_tuple)
             return Dimension(dimensions_tuple=dimensions_tuple)
         else:
             raise InvalidOperationError("reverse division on Dimension", type(other), (int, float))
 
     def __eq__(self, other):
         if isinstance(other, Dimension) or issubclass(type(other), Dimension):
-            if other.dimensions_tuple == self.dimensions_tuple:
-                return True
+            return self._rust == other._rust
         return False
+
+    def __hash__(self):
+        return hash(self._rust)
 
     def __pow__(self, power, modulo=None):
         raise InvalidPowerError("Dimension", power, "exponentiation with Dimension is not allowed")
@@ -502,7 +397,7 @@ class Dimension:
         Example:
             >>> velocity = Dimension.new_instance((1, 0, 0, -1, 0, 0, 0))
             >>> velocity.show_dimension()
-            'L¹ / t¹'
+            'L1 / t1'
         """
         numerator = ""
         denominator = ""
@@ -514,18 +409,26 @@ class Dimension:
             if power < 0:
                 is_numerator = False
                 power = abs(power)
-            power_str = "".join([NUMBER_STR_TO_POWER_STR[i] for i in str(power)])
+            # Format integer-valued floats without decimal point
+            if power == int(power):
+                power_display = str(int(power))
+            else:
+                power_display = str(power)
+            power_str = "".join([NUMBER_STR_TO_POWER_STR[c] for c in power_display])
             if is_numerator:
                 numerator += f"{SYMBOLS[BaseDimension(i)]}{power_str}"
             else:
                 denominator += f"{SYMBOLS[BaseDimension(i)]}{power_str}"
         if not denominator:
             to_print = f"{numerator}"
-            print()
         elif not numerator:
             to_print = f"1 / {denominator}"
-            print()
         else:
             to_print = f"{numerator} / {denominator}"
-        # print(to_print)
         return to_print
+
+    def __repr__(self):
+        return f"Dimension(dimensions_tuple={self.dimensions_tuple})"
+
+    def __str__(self):
+        return self.show_dimension()

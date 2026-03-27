@@ -4,6 +4,8 @@ use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyTuple};
 use serde_json;
 
+use crate::physical_dimension::PhysicalDimension;
+
 // Dimension indices
 pub const DIM_LENGTH: usize = 0;
 pub const DIM_MASS: usize = 1;
@@ -145,6 +147,32 @@ impl PhysicalScale {
         Self::new_default()
     }
 
+    /// Create from a PhysicalDimension, conversion factors, and rescale value.
+    #[staticmethod]
+    pub fn from_dimension(
+        dimension: &PhysicalDimension,
+        conversions: &Bound<'_, PyTuple>,
+        rescale_value: f64,
+    ) -> PyResult<Self> {
+        let mut data = Array1::zeros(15);
+
+        // Copy dimension exponents
+        let dim_data = dimension.as_array();
+        for i in 0..7 {
+            data[i] = dim_data[i];
+        }
+
+        // Extract conversions
+        for i in 0..7 {
+            data[CONV_OFFSET + i] = conversions.get_item(i)?.extract::<f64>()?;
+        }
+
+        // Set rescale value
+        data[RESCALE_INDEX] = rescale_value;
+
+        Ok(Self { data })
+    }
+
     // ==================== Dimension Accessors ====================
 
     #[getter]
@@ -182,8 +210,18 @@ impl PhysicalScale {
         self.data[DIM_LUMINOUS_INTENSITY]
     }
 
+    /// Get the dimension as a PhysicalDimension object.
+    #[getter]
+    pub fn dimension(&self) -> PhysicalDimension {
+        let mut dim_data = [0.0; 7];
+        for i in 0..7 {
+            dim_data[i] = self.data[i];
+        }
+        PhysicalDimension::from_array(dim_data)
+    }
+
     /// Get dimension exponent by index
-    pub fn get_dimension(&self, index: usize) -> f64 {
+    pub fn get_dimension_exponent(&self, index: usize) -> f64 {
         if index < 7 {
             self.data[index]
         } else {
