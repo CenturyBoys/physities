@@ -1,4 +1,4 @@
-from physities.src.dimension import Dimension, BaseDimension
+from physities.src.dimension import Dimension
 from physities.src.scale import Scale
 from .unit import Unit
 

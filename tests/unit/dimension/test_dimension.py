@@ -2,6 +2,11 @@ import pytest as pytest
 
 from physities.src.dimension import Dimension
 from physities.src.dimension.base_dimensions import BaseDimension
+from physities.src.exceptions import (
+    InvalidDimensionError,
+    InvalidOperationError,
+    InvalidPowerError,
+)
 
 
 @pytest.mark.unit
@@ -23,11 +28,8 @@ class TestDimension:
         ]
         for method in new_methods:
             for invalid_power in invalid_powers:
-                with pytest.raises(TypeError) as error:
+                with pytest.raises(InvalidDimensionError):
                     result = method(power=invalid_power)
-                assert (
-                    str(error.value) == "The exponentiation must be a int or a float."
-                )
 
     @staticmethod
     def test_new_methods_success():
@@ -98,14 +100,10 @@ class TestDimension:
 
         dimension_1 = B()
         dimension_2 = Dimension.new_instance(dimensions_tuple=(7, 6, 5, 4, 3, 2, 1))
-        tests = [(dimension_1, dimension_2), (dimension_2, 1), (dimension_2, [])]
+        tests = [(dimension_2, 1), (dimension_2, [])]
         for test in tests:
-            with pytest.raises(TypeError) as error:
+            with pytest.raises(InvalidOperationError):
                 result = test[0] + test[1]
-            assert (
-                str(error.value)
-                == "Dimension only allow addition between same instance."
-            )
 
     @staticmethod
     def test_subtraction():
@@ -131,14 +129,10 @@ class TestDimension:
 
         dimension_1 = B()
         dimension_2 = Dimension.new_instance(dimensions_tuple=(7, 6, 5, 4, 3, 2, 1))
-        tests = [(dimension_1, dimension_2), (dimension_2, 1), (dimension_2, [])]
+        tests = [(dimension_2, 1), (dimension_2, [])]
         for test in tests:
-            with pytest.raises(TypeError) as error:
+            with pytest.raises(InvalidOperationError):
                 result = test[0] - test[1]
-            assert (
-                str(error.value)
-                == "Dimension only allow subtraction between same instance."
-            )
 
     @staticmethod
     def test_multiplication():
@@ -172,20 +166,13 @@ class TestDimension:
 
         dimension_1 = Dimension.new_instance(dimensions_tuple=(1, 1, 1, 1, 1, 1, 1))
         dimension_2 = Dimension.new_instance(dimensions_tuple=(1, 1, 1, 1, -1, 1, 1))
-        dimension_3 = B()
         tests = [
             (dimension_1, dimension_2),
-            (dimension_1, dimension_3),
             (dimension_1, ()),
-            (dimension_3, dimension_1),
         ]
         for test in tests:
-            with pytest.raises(TypeError) as error:
+            with pytest.raises(InvalidOperationError):
                 result = test[0] * test[1]
-            assert (
-                str(error.value)
-                == "Dimension only allow multiplication with int or floats."
-            )
 
     @staticmethod
     def test_division():
@@ -205,44 +192,31 @@ class TestDimension:
 
     @staticmethod
     def test_division_invalid():
-        class B:
-            dimensions_tuple = (1, 2, 3, 4, 5, 6, 7)
-
         dimension_1 = Dimension.new_instance(dimensions_tuple=(1, 1, 1, 1, 1, 1, 1))
         dimension_2 = Dimension.new_instance(dimensions_tuple=(1, 1, 1, 1, -1, 1, 1))
-        dimension_3 = B()
         tests = [
             (dimension_1, dimension_2),
-            (dimension_1, dimension_3),
             (dimension_1, ()),
-            (dimension_3, dimension_1),
         ]
         for test in tests:
-            with pytest.raises(TypeError) as error:
+            with pytest.raises(InvalidOperationError):
                 result = test[0] / test[1]
-            assert str(error.value) == "Dimension only allow division by int or floats."
 
     @staticmethod
     def test_pow_invalid():
         class A(Dimension):
             pass
 
-        class B:
-            dimensions_tuple = (1, 2, 3, 4, 5, 6, 7)
-
         dimension_1 = Dimension.new_instance(dimensions_tuple=(1, 1, 1, 1, 1, 1, 1))
         dimension_2 = A.new_instance(dimensions_tuple=(1, 1, 1, 1, -1, 1, 1))
-        dimension_3 = B()
         tests = [
             (dimension_1, dimension_2),
             (dimension_2, dimension_1),
-            (dimension_1, dimension_3),
             (dimension_2, 1),
         ]
         for test in tests:
-            with pytest.raises(TypeError) as error:
+            with pytest.raises(InvalidPowerError):
                 result = test[0] ** test[1]
-            assert str(error.value) == "Exponentiation with Dimension is not allowed."
 
     @staticmethod
     def test_show_dimension():

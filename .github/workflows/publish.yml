@@ -1,35 +1,108 @@
-name: Publish to PyPI
+name: Build and Publish
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  test-and-publish:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - uses: snok/install-poetry@v1
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
 
-      - name: Install dependencies
-        run: poetry install
-
-      - name: Run linting
-        run: poetry run ruff check .
-
-      - name: Run tests
-        run: poetry run pytest tests/ -v
+      - name: Install maturin and test dependencies
+        run: |
+          pip install maturin pytest pytest-cov hypothesis ruff kobject
 
       - name: Build package
-        run: poetry build
+        run: maturin build --release
+
+      - name: Install package
+        run: pip install target/wheels/*.whl --force-reinstall
+
+      - name: Run linting
+        run: ruff check .
+
+      - name: Run tests with coverage
+        working-directory: /tmp
+        run: pytest $GITHUB_WORKSPACE/tests/ -v --cov=physities --cov-report=xml --cov-report=html
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-physities
+          fail_ci_if_error: false
+          verbose: true
+
+  build:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          command: build
+          args: --release -o dist
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: dist/*.whl
+
+  publish:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all wheels
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install twine
+        run: pip install twine
 
       - name: Publish to PyPI
-        run: poetry publish --no-interaction
         env:
-          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload dist/*.whl --skip-existing

@@ -1,0 +1,76 @@
+name: Benchmarks
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  deployments: write
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: |
+          pip install maturin pytest pytest-benchmark numpy kobject
+
+      - name: Build package
+        run: maturin build --release
+
+      - name: Install package
+        run: pip install target/wheels/*.whl --force-reinstall
+
+      - name: Run benchmarks
+        working-directory: /tmp
+        run: |
+          pytest $GITHUB_WORKSPACE/benchmarks/ \
+            -o addopts="" \
+            --benchmark-only \
+            --benchmark-json=$GITHUB_WORKSPACE/benchmark-results.json \
+            --benchmark-columns=min,max,mean,stddev,median,ops \
+            --benchmark-sort=mean \
+            --benchmark-min-rounds=10
+
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          name: Physities Benchmarks
+          tool: 'pytest'
+          output-file-path: ./benchmark-results.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          alert-threshold: '150%'
+          comment-on-alert: true
+          fail-on-alert: false
+          alert-comment-cc-users: '@M4tus4l3m'
+
+      - name: Comment benchmark results on PR
+        uses: benchmark-action/github-action-benchmark@v1
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        with:
+          name: Physities Benchmarks
+          tool: 'pytest'
+          output-file-path: ./benchmark-results.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          comment-always: true
+          alert-threshold: '150%'
+          skip-fetch-gh-pages: true
+          save-data-file: false
