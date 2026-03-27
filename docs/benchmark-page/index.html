@@ -9,7 +9,7 @@
         * { box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
             background: #fafafa;
@@ -24,6 +24,39 @@
             margin-bottom: 30px;
             border-left: 4px solid #3498db;
         }
+        .summary {
+            background: #e8f4f8;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        .summary strong { color: #2980b9; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        th { background: #34495e; color: #fff; font-weight: 600; }
+        td:first-child { text-align: left; font-weight: 600; }
+        tr:hover { background: #f5f5f5; }
+        .faster { color: #27ae60; }
+        .slower { color: #e74c3c; }
+        .time { font-family: monospace; font-size: 14px; }
+        .overhead {
+            background: #ffeaa7;
+            font-weight: 600;
+            color: #d35400;
+        }
         .chart-container {
             background: #fff;
             padding: 20px;
@@ -32,73 +65,33 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .chart-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             margin-bottom: 15px;
             color: #2c3e50;
         }
-        .legend {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-        }
-        .baseline { background: #27ae60; }
-        .physities { background: #3498db; }
-        .creation { background: #9b59b6; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background: #fff;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        th { background: #34495e; color: #fff; }
-        tr:hover { background: #f5f5f5; }
-        .fast { color: #27ae60; font-weight: 600; }
-        .info { color: #7f8c8d; font-size: 14px; }
-        canvas { max-height: 300px; }
+        .info { color: #7f8c8d; font-size: 14px; margin-top: 30px; }
+        canvas { max-height: 250px; }
     </style>
 </head>
 <body>
     <h1>⚡ Physities Performance</h1>
 
     <div class="description">
-        <p><strong>What do these numbers mean?</strong></p>
-        <p>Values are in <strong>operations per second</strong> (higher = faster).</p>
-        <p>We compare physities (with unit safety) against plain Python floats (no safety).</p>
-        <p>The overhead is the price you pay for preventing bugs like <code>meters + seconds</code>.</p>
+        <p><strong>How much overhead does unit safety add?</strong></p>
+        <p>We measure the same operation in plain Python vs Physities to show the cost of dimensional analysis.</p>
     </div>
 
-    <div class="legend">
-        <div class="legend-item"><div class="legend-color baseline"></div> Python baseline (raw floats)</div>
-        <div class="legend-item"><div class="legend-color physities"></div> Physities (with unit safety)</div>
-        <div class="legend-item"><div class="legend-color creation"></div> Unit creation</div>
-    </div>
+    <div class="summary" id="summary"></div>
 
-    <h2>Latest Results</h2>
+    <h2>Comparison Table</h2>
+    <p>Time per operation (lower = faster)</p>
     <div id="results-table"></div>
 
-    <h2>Performance Over Time</h2>
+    <h2>Trends Over Time</h2>
     <div id="charts"></div>
 
-    <p class="info">Data from <a href="./data.js">benchmark runs</a>. Updated on each commit to main.</p>
+    <p class="info">Updated on each commit to main. <a href="./data.js">Raw data</a></p>
 
     <script src="./data.js"></script>
     <script>
@@ -121,22 +114,6 @@
             return n.includes('create') || n.includes('creation');
         }
 
-        // Clean up test names for display
-        function cleanName(name) {
-            return name
-                .replace('benchmarks/bench_core.py::', '')
-                .replace('TestBaseline::', '')
-                .replace('TestPhysities::', '')
-                .replace('TestCreation::', '')
-                .replace('test_python_float_', 'Python: ')
-                .replace('test_baseline_', 'Python: ')
-                .replace('test_unit_', 'Physities: ')
-                .replace('test_physities_', 'Physities: ')
-                .replace('test_create_', 'Create: ')
-                .replace('test_', '')
-                .replace('_', ' ');
-        }
-
         // Get operation type from name
         function getOperation(name) {
             const n = name.toLowerCase();
@@ -147,11 +124,27 @@
             return null;
         }
 
-        // Format numbers
-        function formatOps(value) {
-            if (value >= 1e6) return (value / 1e6).toFixed(2) + 'M ops/s';
-            if (value >= 1e3) return (value / 1e3).toFixed(1) + 'K ops/s';
-            return value.toFixed(0) + ' ops/s';
+        // Clean up test names for display
+        function cleanName(name) {
+            return name
+                .replace('benchmarks/bench_core.py::', '')
+                .replace('TestBaseline::', '')
+                .replace('TestPhysities::', '')
+                .replace('TestCreation::', '')
+                .replace('test_python_float_', 'Python ')
+                .replace('test_baseline_', 'Python ')
+                .replace('test_unit_', 'Physities ')
+                .replace('test_physities_', 'Physities ')
+                .replace('test_create_', 'Create ')
+                .replace('test_', '')
+                .replace('_', ' ');
+        }
+
+        // Convert ops/sec to time (nanoseconds or microseconds)
+        function formatTime(opsPerSec) {
+            const ns = 1e9 / opsPerSec;
+            if (ns >= 1000) return (ns / 1000).toFixed(1) + ' µs';
+            return ns.toFixed(0) + ' ns';
         }
 
         // Get category color
@@ -174,38 +167,63 @@
             const physities = benches.filter(b => isPhysities(b.name));
             const creation = benches.filter(b => isCreation(b.name));
 
-            let html = '<table><tr><th>Operation</th><th>Python (baseline)</th><th>Physities</th><th>Overhead</th></tr>';
+            let html = `<table>
+                <tr>
+                    <th>Operation</th>
+                    <th>Plain Python<br><small class="faster">✓ faster</small></th>
+                    <th>Physities<br><small>(with units)</small></th>
+                    <th>Overhead</th>
+                </tr>`;
 
-            const ops = ['add', 'multiply', 'divide', 'convert'];
+            const ops = [
+                { key: 'add', label: 'a + b' },
+                { key: 'multiply', label: 'a × b' },
+                { key: 'divide', label: 'a ÷ b' },
+                { key: 'convert', label: 'convert()' }
+            ];
+
+            let totalOverhead = 0;
+            let count = 0;
+
             ops.forEach(op => {
-                const base = baseline.find(b => getOperation(b.name) === op);
-                const phys = physities.find(b => getOperation(b.name) === op);
+                const base = baseline.find(b => getOperation(b.name) === op.key);
+                const phys = physities.find(b => getOperation(b.name) === op.key);
                 if (base && phys) {
-                    const overhead = (base.value / phys.value).toFixed(1);
+                    const overhead = (base.value / phys.value);
+                    totalOverhead += overhead;
+                    count++;
                     html += `<tr>
-                        <td><strong>${op}</strong></td>
-                        <td class="fast">${formatOps(base.value)}</td>
-                        <td>${formatOps(phys.value)}</td>
-                        <td>${overhead}x slower</td>
+                        <td>${op.label}</td>
+                        <td class="time faster">${formatTime(base.value)}</td>
+                        <td class="time slower">${formatTime(phys.value)}</td>
+                        <td class="overhead">${overhead.toFixed(0)}× slower</td>
                     </tr>`;
                 }
             });
 
+            // Add creation benchmarks
             creation.forEach(b => {
                 const name = cleanName(b.name);
                 html += `<tr>
-                    <td><strong>${name}</strong></td>
-                    <td>-</td>
-                    <td>${formatOps(b.value)}</td>
-                    <td>-</td>
+                    <td>${name}</td>
+                    <td class="time">—</td>
+                    <td class="time">${formatTime(b.value)}</td>
+                    <td>—</td>
                 </tr>`;
             });
 
             html += '</table>';
             document.getElementById('results-table').innerHTML = html;
+
+            // Summary
+            if (count > 0) {
+                const avgOverhead = (totalOverhead / count).toFixed(0);
+                document.getElementById('summary').innerHTML =
+                    `<strong>Average overhead: ${avgOverhead}×</strong> — Physities operations take ~${avgOverhead}× longer than raw Python, but you get unit safety.`;
+            }
         }
 
-        // Render charts (only show latest benchmark names, not old ones)
+        // Render charts (only physities benchmarks, showing time trend)
         function renderCharts(data) {
             const entries = data.entries['Physities Benchmarks'];
             if (!entries || entries.length === 0) return;
@@ -213,30 +231,29 @@
             const container = document.getElementById('charts');
             const latest = entries[entries.length - 1];
 
-            // Only show charts for the latest benchmark names
-            const latestNames = latest.benches.map(b => b.name);
+            // Only show physities and creation benchmarks (not baseline)
+            const latestNames = latest.benches
+                .filter(b => isPhysities(b.name) || isCreation(b.name))
+                .map(b => b.name);
 
             latestNames.forEach(name => {
                 const div = document.createElement('div');
                 div.className = 'chart-container';
-                div.innerHTML = `<div class="chart-title">${cleanName(name)}</div><canvas id="chart-${name.replace(/[^a-z0-9]/gi, '')}"></canvas>`;
+                div.innerHTML = `<div class="chart-title">${cleanName(name)}</div><canvas></canvas>`;
                 container.appendChild(div);
 
                 const ctx = div.querySelector('canvas').getContext('2d');
                 const chartData = entries.map(e => {
                     const bench = e.benches.find(b => b.name === name);
-                    return {
-                        x: e.commit.id.substring(0, 7),
-                        y: bench ? bench.value : null
-                    };
-                }).filter(d => d.y !== null);
+                    return bench ? { x: e.commit.id.substring(0, 7), y: 1e9 / bench.value } : null;
+                }).filter(d => d !== null);
 
                 new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: chartData.map(d => d.x),
                         datasets: [{
-                            label: 'ops/sec',
+                            label: 'Time (ns)',
                             data: chartData.map(d => d.y),
                             borderColor: getColor(name),
                             backgroundColor: getColor(name) + '20',
@@ -248,7 +265,10 @@
                         responsive: true,
                         plugins: { legend: { display: false } },
                         scales: {
-                            y: { beginAtZero: true, title: { display: true, text: 'ops/sec' } },
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'nanoseconds (lower = faster)' }
+                            },
                             x: { title: { display: true, text: 'commit' } }
                         }
                     }
