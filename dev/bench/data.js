@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1774610809376,
+  "lastUpdate": 1774611517923,
   "repoUrl": "https://github.com/CenturyBoys/physities",
   "entries": {
     "Physities Benchmarks": [
@@ -2910,6 +2910,184 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 8.007097815601942e-7",
             "extra": "mean: 3.844384428042655 usec\nrounds: 21770"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "im.ximit@gmail.com",
+            "name": "Marco Sievers de Almeida",
+            "username": "XimitGaia"
+          },
+          "committer": {
+            "email": "im.ximit@gmail.com",
+            "name": "Marco Sievers de Almeida",
+            "username": "XimitGaia"
+          },
+          "distinct": true,
+          "id": "2063f5a326f5425c931d23af19013d316642a7fe",
+          "message": "chore: bump version to 0.2.1, remove poetry.lock\n\n- Remove unused poetry.lock (project uses maturin, not poetry)\n- Bump version to 0.2.1 for next release\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>",
+          "timestamp": "2026-03-27T08:37:30-03:00",
+          "tree_id": "70682537df74fe92f3ea2e2be43a39b77951df84",
+          "url": "https://github.com/CenturyBoys/physities/commit/2063f5a326f5425c931d23af19013d316642a7fe"
+        },
+        "date": 1774611517468,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_add",
+            "value": 11365127.12471304,
+            "unit": "iter/sec",
+            "range": "stddev: 7.763384881772208e-9",
+            "extra": "mean: 87.98845706050471 nsec\nrounds: 80367"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_multiply",
+            "value": 11315024.785066402,
+            "unit": "iter/sec",
+            "range": "stddev: 1.0007462946365674e-8",
+            "extra": "mean: 88.37806535962392 nsec\nrounds: 112791"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_divide",
+            "value": 11088767.267716885,
+            "unit": "iter/sec",
+            "range": "stddev: 9.969140015327106e-9",
+            "extra": "mean: 90.18134981618793 nsec\nrounds: 109326"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_convert",
+            "value": 10487449.56199016,
+            "unit": "iter/sec",
+            "range": "stddev: 1.1053331424645578e-8",
+            "extra": "mean: 95.35206763931326 nsec\nrounds: 103756"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_create_float",
+            "value": 11481600.490963593,
+            "unit": "iter/sec",
+            "range": "stddev: 9.671875232015e-9",
+            "extra": "mean: 87.09587141506525 nsec\nrounds: 113046"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_create_class",
+            "value": 5417041.148553281,
+            "unit": "iter/sec",
+            "range": "stddev: 3.08211335913647e-8",
+            "extra": "mean: 184.6026220914406 nsec\nrounds: 190840"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_create_type",
+            "value": 177214.37720155806,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000023293735283535344",
+            "extra": "mean: 5.642883019940484 usec\nrounds: 56266"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_add",
+            "value": 315177.24396748055,
+            "unit": "iter/sec",
+            "range": "stddev: 6.88915348746854e-7",
+            "extra": "mean: 3.1728178957716193 usec\nrounds: 43854"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_multiply",
+            "value": 335725.10883226345,
+            "unit": "iter/sec",
+            "range": "stddev: 7.828033907565438e-7",
+            "extra": "mean: 2.9786273760644595 usec\nrounds: 30618"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_divide",
+            "value": 333534.1915056237,
+            "unit": "iter/sec",
+            "range": "stddev: 6.738418898203494e-7",
+            "extra": "mean: 2.99819336508155 usec\nrounds: 62819"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_convert",
+            "value": 574345.3983309191,
+            "unit": "iter/sec",
+            "range": "stddev: 4.729040500392632e-7",
+            "extra": "mean: 1.7411125829615033 usec\nrounds: 117842"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_create_unit",
+            "value": 5028792.394060533,
+            "unit": "iter/sec",
+            "range": "stddev: 3.2348396262599695e-8",
+            "extra": "mean: 198.85489828108436 nsec\nrounds: 196079"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_create_type",
+            "value": 141983.71945430347,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000022051278963082244",
+            "extra": "mean: 7.0430610202590405 usec\nrounds: 27581"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_numpy_add_1000",
+            "value": 928453.3081136052,
+            "unit": "iter/sec",
+            "range": "stddev: 3.8130360339459295e-7",
+            "extra": "mean: 1.0770600861251283 usec\nrounds: 91735"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_numpy_multiply_1000",
+            "value": 919782.0531435757,
+            "unit": "iter/sec",
+            "range": "stddev: 3.4560119630679107e-7",
+            "extra": "mean: 1.0872140814035893 usec\nrounds: 101751"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_numpy_sum_1000",
+            "value": 329082.4408917299,
+            "unit": "iter/sec",
+            "range": "stddev: 6.937808631043648e-7",
+            "extra": "mean: 3.038752226616084 usec\nrounds: 26048"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_unitarray_add_1000",
+            "value": 234887.18299218288,
+            "unit": "iter/sec",
+            "range": "stddev: 8.556067015584296e-7",
+            "extra": "mean: 4.25736299129306 usec\nrounds: 32976"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_unitarray_multiply_1000",
+            "value": 495620.83221920364,
+            "unit": "iter/sec",
+            "range": "stddev: 5.278265898128033e-7",
+            "extra": "mean: 2.017671443555704 usec\nrounds: 85830"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_unitarray_sum_1000",
+            "value": 286533.0396005441,
+            "unit": "iter/sec",
+            "range": "stddev: 7.755235428431399e-7",
+            "extra": "mean: 3.489998924361745 usec\nrounds: 17664"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_unitarray_convert_1000",
+            "value": 339360.9593642805,
+            "unit": "iter/sec",
+            "range": "stddev: 6.029043975431502e-7",
+            "extra": "mean: 2.9467149134458013 usec\nrounds: 45744"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_loop_add_100",
+            "value": 3407.4811709093365,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000007724206434063163",
+            "extra": "mean: 293.47190779432407 usec\nrounds: 3015"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_batch_add_100",
+            "value": 258709.92779972538,
+            "unit": "iter/sec",
+            "range": "stddev: 8.729099874378133e-7",
+            "extra": "mean: 3.8653329174678137 usec\nrounds: 25646"
           }
         ]
       }
