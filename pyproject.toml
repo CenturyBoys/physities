@@ -1,6 +1,6 @@
 [project]
 name = "physities"
-version = "0.2.0"
+version = "0.2.1"
 description = "A Python library for representing and working with physical quantities and units"
 authors = [{name = "M4tus4l3m", email = "lucas.sievers@gmail.com"}]
 readme = "README.md"
