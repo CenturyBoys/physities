@@ -47,13 +47,15 @@ jobs:
           cd docs
           make html
 
-      - name: Fetch benchmark data from gh-pages
+      - name: Setup benchmark page
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
+          mkdir -p docs/build/html/dev/bench
+          # Use our custom benchmark page
+          cp docs/benchmark-page/index.html docs/build/html/dev/bench/
+          # Get benchmark data from gh-pages
           git fetch origin gh-pages:gh-pages || true
-          if git show gh-pages:dev/bench/index.html > /dev/null 2>&1; then
-            mkdir -p docs/build/html/dev/bench
-            git show gh-pages:dev/bench/index.html > docs/build/html/dev/bench/index.html
+          if git show gh-pages:dev/bench/data.js > /dev/null 2>&1; then
             git show gh-pages:dev/bench/data.js > docs/build/html/dev/bench/data.js
           fi
 
