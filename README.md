@@ -1,6 +1,6 @@
 # Physities
 
-![banner.png](docs/banner.png)
+![banner.png](https://github.com/CenturyBoys/physities/blob/main/docs/banner.png)
 
 
 [![CI](https://github.com/CenturyBoys/physities/actions/workflows/publish.yml/badge.svg)](https://github.com/CenturyBoys/physities/actions/workflows/publish.yml)
