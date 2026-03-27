@@ -41,7 +41,7 @@ Clone the repository and build:
 
 .. code-block:: bash
 
-   git clone https://github.com/M4tus4l3m/physities.git
+   git clone https://github.com/CenturyBoys/physities.git
    cd physities
    maturin develop --release
 

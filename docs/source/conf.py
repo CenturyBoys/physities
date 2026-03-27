@@ -38,7 +38,7 @@ html_short_title = 'Physities'
 
 # Furo theme options
 html_theme_options = {
-    "source_repository": "https://github.com/M4tus4l3m/physities/",
+    "source_repository": "https://github.com/CenturyBoys/physities/",
     "source_branch": "main",
     "source_directory": "docs/source/",
 }

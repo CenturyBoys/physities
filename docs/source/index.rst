@@ -1,12 +1,12 @@
 Physities Documentation
 =======================
 
-.. image:: https://github.com/M4tus4l3m/physities/actions/workflows/publish.yml/badge.svg
-   :target: https://github.com/M4tus4l3m/physities/actions/workflows/publish.yml
+.. image:: https://github.com/CenturyBoys/physities/actions/workflows/publish.yml/badge.svg
+   :target: https://github.com/CenturyBoys/physities/actions/workflows/publish.yml
    :alt: CI
 
-.. image:: https://codecov.io/gh/M4tus4l3m/physities/branch/main/graph/badge.svg
-   :target: https://codecov.io/gh/M4tus4l3m/physities
+.. image:: https://codecov.io/gh/CenturyBoys/physities/branch/main/graph/badge.svg
+   :target: https://codecov.io/gh/CenturyBoys/physities
    :alt: codecov
 
 .. image:: https://badge.fury.io/py/physities.svg

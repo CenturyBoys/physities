@@ -3,8 +3,8 @@
 ![banner.png](docs/banner.png)
 
 
-[![CI](https://github.com/M4tus4l3m/physities/actions/workflows/publish.yml/badge.svg)](https://github.com/M4tus4l3m/physities/actions/workflows/publish.yml)
-[![codecov](https://codecov.io/gh/M4tus4l3m/physities/branch/main/graph/badge.svg)](https://codecov.io/gh/M4tus4l3m/physities)
+[![CI](https://github.com/CenturyBoys/physities/actions/workflows/publish.yml/badge.svg)](https://github.com/CenturyBoys/physities/actions/workflows/publish.yml)
+[![codecov](https://codecov.io/gh/CenturyBoys/physities/branch/main/graph/badge.svg)](https://codecov.io/gh/CenturyBoys/physities)
 [![PyPI](https://badge.fury.io/py/physities.svg)](https://pypi.org/project/physities/)
 [![Python](https://img.shields.io/pypi/pyversions/physities.svg)](https://pypi.org/project/physities/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

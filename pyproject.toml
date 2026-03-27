@@ -39,11 +39,11 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/M4tus4l3m/physities"
+Homepage = "https://github.com/CenturyBoys/physities"
 Documentation = "https://m4tus4l3m.github.io/physities/"
-Repository = "https://github.com/M4tus4l3m/physities"
-Changelog = "https://github.com/M4tus4l3m/physities/blob/main/CHANGELOG.md"
-"Bug Tracker" = "https://github.com/M4tus4l3m/physities/issues"
+Repository = "https://github.com/CenturyBoys/physities"
+Changelog = "https://github.com/CenturyBoys/physities/blob/main/CHANGELOG.md"
+"Bug Tracker" = "https://github.com/CenturyBoys/physities/issues"
 
 [project.optional-dependencies]
 dev = [
