@@ -1,6 +1,7 @@
 from physities.src.dimension import Dimension
 from physities.src.scale import Scale
-from .unit import Unit
+from .unit import Unit, MetaUnit
+from .array import UnitArray
 
 
 class Meter(Unit):
