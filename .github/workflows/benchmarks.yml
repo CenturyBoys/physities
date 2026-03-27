@@ -60,6 +60,7 @@ jobs:
           comment-on-alert: true
           fail-on-alert: false
           alert-comment-cc-users: '@M4tus4l3m'
+          skip-fetch-gh-pages: true
 
       - name: Comment benchmark results on PR
         uses: benchmark-action/github-action-benchmark@v1
