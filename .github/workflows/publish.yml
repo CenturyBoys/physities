@@ -26,20 +26,25 @@ jobs:
         run: |
           pip install maturin pytest pytest-cov hypothesis ruff kobject numpy
 
-      - name: Build and install package (in-place)
-        run: maturin develop --release
+      - name: Build and install package
+        run: |
+          maturin build --release
+          pip install target/wheels/*.whl --force-reinstall
 
       - name: Run linting
         run: ruff check .
 
       - name: Run tests with coverage
-        run: pytest tests/ -v --cov=physities --cov-report=xml --cov-report=html
+        working-directory: /tmp
+        run: |
+          cp -r $GITHUB_WORKSPACE/tests .
+          pytest tests/ -v --cov=physities --cov-report=xml --cov-report=html
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.xml
+          files: /tmp/coverage.xml
           flags: unittests
           name: codecov-physities
           fail_ci_if_error: false
