@@ -367,10 +367,7 @@ class Dimension:
 
     def __rtruediv__(self, other):
         if isinstance(other, (int, float)):
-            # scalar / dimension - returns dimension with each element as scalar / element
-            # This matches the original behavior
-            dimensions_tuple = tuple(other / i if i != 0 else 0.0 for i in self.dimensions_tuple)
-            return Dimension(dimensions_tuple=dimensions_tuple)
+            return Dimension._from_rust(float(other) / self._rust)
         else:
             raise InvalidOperationError("reverse division on Dimension", type(other), (int, float))
 

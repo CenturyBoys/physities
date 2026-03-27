@@ -252,11 +252,16 @@ impl PhysicalDimension {
         PhysicalDimension { data }
     }
 
-    /// Right divide (scalar / dimension) - returns scaled dimension.
+    /// Right divide (scalar / dimension) - element-wise scalar/exponent.
+    /// Returns 0.0 for zero exponents to avoid division by zero.
     pub fn __rtruediv__(&self, scalar: f64) -> PhysicalDimension {
         let mut data = [0.0; 7];
         for i in 0..7 {
-            data[i] = scalar / self.data[i];
+            data[i] = if self.data[i] != 0.0 {
+                scalar / self.data[i]
+            } else {
+                0.0
+            };
         }
         PhysicalDimension { data }
     }
