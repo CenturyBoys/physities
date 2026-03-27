@@ -320,3 +320,98 @@ class Unit(metaclass=MetaUnit):
             )
         raise InvalidConversionError(type(self).__name__, type(unit).__name__)
 
+    # =========================================================================
+    # Serialization for Database Storage
+    # =========================================================================
+
+    def to_dict(self) -> dict:
+        """Serialize to a dictionary for database/JSON storage.
+
+        Returns:
+            Dictionary with 'value', 'si_value', and 'scale' information.
+
+        Example:
+            >>> m = Meter(100)
+            >>> m.to_dict()
+            {'value': 100, 'si_value': 100.0, 'dimension_int64': 1, 'scale_json': '...'}
+        """
+        rust_scale = self.scale.to_rust()
+        return {
+            "value": self.value,
+            "si_value": self.value * self.scale.conversion_factor,
+            "dimension_int64": rust_scale.to_dimension_int64(),
+            "scale_json": rust_scale.to_json(),
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Unit":
+        """Deserialize from a dictionary.
+
+        Args:
+            data: Dictionary with serialization data.
+
+        Returns:
+            A new Unit instance.
+
+        Example:
+            >>> data = {'si_value': 100.0, 'dimension_int64': 1}
+            >>> unit = Unit.from_dict(data)
+        """
+        from physities._physities_core import PhysicalScale as RustScale
+
+        if "scale_json" in data:
+            rust_scale = RustScale.from_json(data["scale_json"])
+            scale = Scale.from_rust(rust_scale)
+            value = data.get("value", data.get("si_value", 0))
+        elif "dimension_int64" in data:
+            rust_scale = RustScale.from_dimension_int64(data["dimension_int64"])
+            scale = Scale.from_rust(rust_scale)
+            value = data.get("si_value", data.get("value", 0))
+        else:
+            raise ValueError("Missing 'scale_json' or 'dimension_int64' in data")
+
+        instance = cls(value)
+        instance.scale = scale
+        return instance
+
+    def to_tuple(self) -> tuple:
+        """Compact serialization as (si_value, dimension_int64).
+
+        Best for database columns: store as two columns (FLOAT8, INT8).
+        Values are always stored in SI base units for consistency.
+
+        Returns:
+            Tuple of (si_value, dimension_int64).
+
+        Example:
+            >>> velocity = (Meter / Second)(10)
+            >>> velocity.to_tuple()
+            (10.0, 61441)
+        """
+        si_value = self.value * self.scale.conversion_factor
+        dim_int = self.scale.to_rust().to_dimension_int64()
+        return (si_value, dim_int)
+
+    @classmethod
+    def from_tuple(cls, data: tuple) -> "Unit":
+        """Deserialize from compact tuple format.
+
+        Args:
+            data: Tuple of (si_value, dimension_int64).
+
+        Returns:
+            A new Unit instance in SI base units.
+
+        Example:
+            >>> unit = Unit.from_tuple((10.0, 61441))  # 10 m/s
+        """
+        si_value, dim_int = data
+
+        from physities._physities_core import PhysicalScale as RustScale
+        rust_scale = RustScale.from_dimension_int64(dim_int)
+        scale = Scale.from_rust(rust_scale)
+
+        instance = cls(si_value)
+        instance.scale = scale
+        return instance
+
