@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1774577681639,
+  "lastUpdate": 1774606349235,
   "repoUrl": "https://github.com/CenturyBoys/physities",
   "entries": {
     "Physities Benchmarks": [
@@ -2020,6 +2020,184 @@ window.BENCHMARK_DATA = {
             "unit": "iter/sec",
             "range": "stddev: 7.314190828618903e-7",
             "extra": "mean: 3.8298495039913605 usec\nrounds: 24798"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "im.ximit@gmail.com",
+            "name": "Marco Sievers de Almeida",
+            "username": "XimitGaia"
+          },
+          "committer": {
+            "email": "im.ximit@gmail.com",
+            "name": "Marco Sievers de Almeida",
+            "username": "XimitGaia"
+          },
+          "distinct": true,
+          "id": "607d784f2fa66a4b93885107ac7ccaf0147e3e45",
+          "message": "fix: use maturin develop for CI tests\n\nmaturin build creates a wheel but doesn't install the Rust extension\nin-place. This causes ModuleNotFoundError when tests import from the\nsource directory. Using maturin develop installs the extension in-place.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>",
+          "timestamp": "2026-03-27T07:11:20-03:00",
+          "tree_id": "8ecdc77d9848a8a96a0755b3c9ade4edf2b54054",
+          "url": "https://github.com/CenturyBoys/physities/commit/607d784f2fa66a4b93885107ac7ccaf0147e3e45"
+        },
+        "date": 1774606348313,
+        "tool": "pytest",
+        "benches": [
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_add",
+            "value": 11628337.096546974,
+            "unit": "iter/sec",
+            "range": "stddev: 7.769595397762398e-9",
+            "extra": "mean: 85.99681895160757 nsec\nrounds: 64148"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_multiply",
+            "value": 11261720.183912976,
+            "unit": "iter/sec",
+            "range": "stddev: 1.0960440333067203e-8",
+            "extra": "mean: 88.7963813404609 nsec\nrounds: 110657"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_divide",
+            "value": 10981592.210721912,
+            "unit": "iter/sec",
+            "range": "stddev: 9.681595767972181e-9",
+            "extra": "mean: 91.06147640625609 nsec\nrounds: 108378"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_convert",
+            "value": 10577409.720408997,
+            "unit": "iter/sec",
+            "range": "stddev: 9.981418745605056e-9",
+            "extra": "mean: 94.54110471581343 nsec\nrounds: 101637"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_create_float",
+            "value": 12100676.406963153,
+            "unit": "iter/sec",
+            "range": "stddev: 1.0446865561041104e-8",
+            "extra": "mean: 82.64000840689211 nsec\nrounds: 115381"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_create_class",
+            "value": 5360293.674118737,
+            "unit": "iter/sec",
+            "range": "stddev: 3.1414294250008644e-8",
+            "extra": "mean: 186.55694273400601 nsec\nrounds: 198020"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_baseline_create_type",
+            "value": 175247.78277521528,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000026942128458716233",
+            "extra": "mean: 5.706206287828862 usec\nrounds: 49683"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_add",
+            "value": 321372.55090365367,
+            "unit": "iter/sec",
+            "range": "stddev: 6.609599510958406e-7",
+            "extra": "mean: 3.111653428981856 usec\nrounds: 39005"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_multiply",
+            "value": 338175.8124018458,
+            "unit": "iter/sec",
+            "range": "stddev: 7.081852035113228e-7",
+            "extra": "mean: 2.9570417614957187 usec\nrounds: 28543"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_divide",
+            "value": 337202.4480124651,
+            "unit": "iter/sec",
+            "range": "stddev: 6.504596156423363e-7",
+            "extra": "mean: 2.9655775214390907 usec\nrounds: 72380"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_convert",
+            "value": 579342.268557796,
+            "unit": "iter/sec",
+            "range": "stddev: 5.792520506719725e-7",
+            "extra": "mean: 1.7260953572218745 usec\nrounds: 141164"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_create_unit",
+            "value": 5014625.091936607,
+            "unit": "iter/sec",
+            "range": "stddev: 2.8077069406880303e-8",
+            "extra": "mean: 199.41670247815364 nsec\nrounds: 196117"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_physities_create_type",
+            "value": 132775.25022589468,
+            "unit": "iter/sec",
+            "range": "stddev: 0.00009184239376419557",
+            "extra": "mean: 7.531524122896917 usec\nrounds: 42097"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_numpy_add_1000",
+            "value": 935561.8915963359,
+            "unit": "iter/sec",
+            "range": "stddev: 4.145644563925151e-7",
+            "extra": "mean: 1.0688763714966139 usec\nrounds: 90416"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_numpy_multiply_1000",
+            "value": 922948.0971663193,
+            "unit": "iter/sec",
+            "range": "stddev: 4.107367429947036e-7",
+            "extra": "mean: 1.083484545956863 usec\nrounds: 121877"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_numpy_sum_1000",
+            "value": 328206.9782255769,
+            "unit": "iter/sec",
+            "range": "stddev: 7.185217017044244e-7",
+            "extra": "mean: 3.046857825529533 usec\nrounds: 34113"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_unitarray_add_1000",
+            "value": 239240.66096880622,
+            "unit": "iter/sec",
+            "range": "stddev: 8.713029764435983e-7",
+            "extra": "mean: 4.1798914781061685 usec\nrounds: 41024"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_unitarray_multiply_1000",
+            "value": 508704.17543503834,
+            "unit": "iter/sec",
+            "range": "stddev: 5.396951486441339e-7",
+            "extra": "mean: 1.965779028931325 usec\nrounds: 145286"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_unitarray_sum_1000",
+            "value": 288900.28528188047,
+            "unit": "iter/sec",
+            "range": "stddev: 7.787294497419204e-7",
+            "extra": "mean: 3.4614019125121263 usec\nrounds: 66721"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_unitarray_convert_1000",
+            "value": 346641.0360080361,
+            "unit": "iter/sec",
+            "range": "stddev: 6.66517378126438e-7",
+            "extra": "mean: 2.8848286732469184 usec\nrounds: 70742"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_loop_add_100",
+            "value": 3477.5136162872427,
+            "unit": "iter/sec",
+            "range": "stddev: 0.000007468145001650903",
+            "extra": "mean: 287.5617784259453 usec\nrounds: 343"
+          },
+          {
+            "name": "benchmarks/bench_core.py::test_batch_add_100",
+            "value": 262746.1705394949,
+            "unit": "iter/sec",
+            "range": "stddev: 7.431047435244363e-7",
+            "extra": "mean: 3.8059546137121885 usec\nrounds: 39329"
           }
         ]
       }
