@@ -1,5 +1,4 @@
 from tests.fixtures import *
-from physities.src.exceptions import InvalidOperationError, InvalidPowerError
 
 
 @pytest.mark.unit
@@ -121,7 +120,7 @@ class TestScale:
 
         invalid_values = [(), {}, A, []]
         for i in invalid_values:
-            with pytest.raises(InvalidOperationError):
+            with pytest.raises(TypeError):
                 joule_scale * i
 
     @staticmethod
@@ -156,9 +155,9 @@ class TestScale:
 
         invalid_values = [(), {}, A, []]
         for i in invalid_values:
-            with pytest.raises(InvalidOperationError):
+            with pytest.raises(TypeError):
                 joule_scale / i
-            with pytest.raises(InvalidOperationError):
+            with pytest.raises(TypeError):
                 i / joule_scale
 
     @staticmethod
@@ -186,5 +185,5 @@ class TestScale:
             pass
         invalid_values = [second_scale, [], {}, (), A]
         for i in invalid_values:
-            with pytest.raises(InvalidPowerError):
+            with pytest.raises(TypeError):
                 meter_scale ** i

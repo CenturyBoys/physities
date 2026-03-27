@@ -2,7 +2,6 @@ from typing import Self
 
 from physities.src.dimension.base_dimensions import BaseDimension
 
-# Import the Rust backend
 from physities._physities_core import PhysicalDimension as _RustDimension
 
 SYMBOLS = {
@@ -12,20 +11,12 @@ SYMBOLS = {
     BaseDimension.TEMPERATURE: "T",
     BaseDimension.AMOUNT: "N",
     BaseDimension.ELECTRIC_CURRENT: "I",
-    BaseDimension.LUMINOUS_INTENSITY: "I\u1d65",  # Iᵥ - subscript v
+    BaseDimension.LUMINOUS_INTENSITY: "I\u1d65",
 }
 
 NUMBER_STR_TO_POWER_STR = {
-    "0": "\u2070",
-    "1": "\u00b9",
-    "2": "\u00b2",
-    "3": "\u00b3",
-    "4": "\u2074",
-    "5": "\u2075",
-    "6": "\u2076",
-    "7": "\u2077",
-    "8": "\u2078",
-    "9": "\u2079",
+    "0": "\u2070", "1": "\u00b9", "2": "\u00b2", "3": "\u00b3", "4": "\u2074",
+    "5": "\u2075", "6": "\u2076", "7": "\u2077", "8": "\u2078", "9": "\u2079",
     ".": "\u02d1",
 }
 
@@ -33,7 +24,7 @@ NUMBER_STR_TO_POWER_STR = {
 class Dimension:
     """Represents physical dimensions using the 7 SI base dimensions.
 
-    Thin wrapper around Rust PhysicalDimension for high performance.
+    Thin wrapper around Rust PhysicalDimension.
     """
 
     __slots__ = ('_rust',)
@@ -171,10 +162,10 @@ class Dimension:
         return hash(self._rust)
 
     def __pow__(self, power, modulo=None):
-        raise TypeError("exponentiation with Dimension is not allowed")
+        raise TypeError("unsupported operand type(s) for ** or pow()")
 
     def __rpow__(self, power):
-        raise TypeError("exponentiation with Dimension is not allowed")
+        raise TypeError("unsupported operand type(s) for ** or pow()")
 
     def show_dimension(self) -> str:
         return self._rust.show_dimension()

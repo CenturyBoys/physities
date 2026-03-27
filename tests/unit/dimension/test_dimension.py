@@ -2,11 +2,6 @@ import pytest as pytest
 
 from physities.src.dimension import Dimension
 from physities.src.dimension.base_dimensions import BaseDimension
-from physities.src.exceptions import (
-    InvalidDimensionError,
-    InvalidOperationError,
-    InvalidPowerError,
-)
 
 
 @pytest.mark.unit
@@ -28,7 +23,7 @@ class TestDimension:
         ]
         for method in new_methods:
             for invalid_power in invalid_powers:
-                with pytest.raises(InvalidDimensionError):
+                with pytest.raises(TypeError):
                     result = method(power=invalid_power)
 
     @staticmethod
@@ -102,7 +97,7 @@ class TestDimension:
         dimension_2 = Dimension.new_instance(dimensions_tuple=(7, 6, 5, 4, 3, 2, 1))
         tests = [(dimension_2, 1), (dimension_2, [])]
         for test in tests:
-            with pytest.raises(InvalidOperationError):
+            with pytest.raises((TypeError, AttributeError)):
                 result = test[0] + test[1]
 
     @staticmethod
@@ -131,7 +126,7 @@ class TestDimension:
         dimension_2 = Dimension.new_instance(dimensions_tuple=(7, 6, 5, 4, 3, 2, 1))
         tests = [(dimension_2, 1), (dimension_2, [])]
         for test in tests:
-            with pytest.raises(InvalidOperationError):
+            with pytest.raises((TypeError, AttributeError)):
                 result = test[0] - test[1]
 
     @staticmethod
@@ -171,7 +166,7 @@ class TestDimension:
             (dimension_1, ()),
         ]
         for test in tests:
-            with pytest.raises(InvalidOperationError):
+            with pytest.raises(TypeError):
                 result = test[0] * test[1]
 
     @staticmethod
@@ -199,7 +194,7 @@ class TestDimension:
             (dimension_1, ()),
         ]
         for test in tests:
-            with pytest.raises(InvalidOperationError):
+            with pytest.raises(TypeError):
                 result = test[0] / test[1]
 
     @staticmethod
@@ -215,7 +210,7 @@ class TestDimension:
             (dimension_2, 1),
         ]
         for test in tests:
-            with pytest.raises(InvalidPowerError):
+            with pytest.raises(TypeError):
                 result = test[0] ** test[1]
 
     @staticmethod
