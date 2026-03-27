@@ -102,14 +102,49 @@
 
     <script src="./data.js"></script>
     <script>
-        // Clean up test names
+        // Check if benchmark is a baseline (Python) test
+        function isBaseline(name) {
+            const n = name.toLowerCase();
+            return n.includes('baseline') || n.includes('python_float') || n.includes('testbaseline');
+        }
+
+        // Check if benchmark is a physities test
+        function isPhysities(name) {
+            const n = name.toLowerCase();
+            return (n.includes('physities') || n.includes('testphysities') || n.includes('unit_'))
+                   && !n.includes('create') && !n.includes('creation');
+        }
+
+        // Check if benchmark is a creation test
+        function isCreation(name) {
+            const n = name.toLowerCase();
+            return n.includes('create') || n.includes('creation');
+        }
+
+        // Clean up test names for display
         function cleanName(name) {
             return name
                 .replace('benchmarks/bench_core.py::', '')
+                .replace('TestBaseline::', '')
+                .replace('TestPhysities::', '')
+                .replace('TestCreation::', '')
+                .replace('test_python_float_', 'Python: ')
                 .replace('test_baseline_', 'Python: ')
+                .replace('test_unit_', 'Physities: ')
                 .replace('test_physities_', 'Physities: ')
                 .replace('test_create_', 'Create: ')
+                .replace('test_', '')
                 .replace('_', ' ');
+        }
+
+        // Get operation type from name
+        function getOperation(name) {
+            const n = name.toLowerCase();
+            if (n.includes('add')) return 'add';
+            if (n.includes('multiply') || n.includes('mul')) return 'multiply';
+            if (n.includes('divide') || n.includes('div')) return 'divide';
+            if (n.includes('convert')) return 'convert';
+            return null;
         }
 
         // Format numbers
@@ -121,8 +156,8 @@
 
         // Get category color
         function getColor(name) {
-            if (name.includes('baseline') || name.includes('Python')) return '#27ae60';
-            if (name.includes('create') || name.includes('Create')) return '#9b59b6';
+            if (isBaseline(name)) return '#27ae60';
+            if (isCreation(name)) return '#9b59b6';
             return '#3498db';
         }
 
@@ -135,16 +170,16 @@
             const benches = latest.benches;
 
             // Group benchmarks
-            const baseline = benches.filter(b => b.name.includes('baseline'));
-            const physities = benches.filter(b => b.name.includes('physities'));
-            const creation = benches.filter(b => b.name.includes('create'));
+            const baseline = benches.filter(b => isBaseline(b.name));
+            const physities = benches.filter(b => isPhysities(b.name));
+            const creation = benches.filter(b => isCreation(b.name));
 
             let html = '<table><tr><th>Operation</th><th>Python (baseline)</th><th>Physities</th><th>Overhead</th></tr>';
 
             const ops = ['add', 'multiply', 'divide', 'convert'];
             ops.forEach(op => {
-                const base = baseline.find(b => b.name.includes(op));
-                const phys = physities.find(b => b.name.includes(op));
+                const base = baseline.find(b => getOperation(b.name) === op);
+                const phys = physities.find(b => getOperation(b.name) === op);
                 if (base && phys) {
                     const overhead = (base.value / phys.value).toFixed(1);
                     html += `<tr>
@@ -170,36 +205,39 @@
             document.getElementById('results-table').innerHTML = html;
         }
 
-        // Render charts
+        // Render charts (only show latest benchmark names, not old ones)
         function renderCharts(data) {
             const entries = data.entries['Physities Benchmarks'];
             if (!entries || entries.length === 0) return;
 
             const container = document.getElementById('charts');
+            const latest = entries[entries.length - 1];
 
-            // Get all unique benchmark names
-            const allNames = [...new Set(entries.flatMap(e => e.benches.map(b => b.name)))];
+            // Only show charts for the latest benchmark names
+            const latestNames = latest.benches.map(b => b.name);
 
-            allNames.forEach(name => {
+            latestNames.forEach(name => {
                 const div = document.createElement('div');
                 div.className = 'chart-container';
                 div.innerHTML = `<div class="chart-title">${cleanName(name)}</div><canvas id="chart-${name.replace(/[^a-z0-9]/gi, '')}"></canvas>`;
                 container.appendChild(div);
 
                 const ctx = div.querySelector('canvas').getContext('2d');
-                const labels = entries.map(e => e.commit.id.substring(0, 7));
-                const values = entries.map(e => {
+                const chartData = entries.map(e => {
                     const bench = e.benches.find(b => b.name === name);
-                    return bench ? bench.value : null;
-                });
+                    return {
+                        x: e.commit.id.substring(0, 7),
+                        y: bench ? bench.value : null
+                    };
+                }).filter(d => d.y !== null);
 
                 new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: labels,
+                        labels: chartData.map(d => d.x),
                         datasets: [{
                             label: 'ops/sec',
-                            data: values,
+                            data: chartData.map(d => d.y),
                             borderColor: getColor(name),
                             backgroundColor: getColor(name) + '20',
                             fill: true,
